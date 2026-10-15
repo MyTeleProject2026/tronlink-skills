@@ -70,11 +70,11 @@ function rawAmount(value, decimals){
   if(raw<=0n) throw new Error("Amount must be greater than zero.");
   return raw.toString();
 }
-function tron(){ if(!window.tronWeb || !window.tronWeb.contract) throw new Error("TronLink was not detected. Open this page in the TronLink in-app browser or a browser with the TronLink extension."); return window.tronWeb; }
+function getTronWeb(){ const provider = window.tron && typeof window.tron === "object" ? window.tron : window.tronLink; const tw = (provider && provider.tronWeb && provider.tronWeb.contract ? provider.tronWeb : null) || (window.tronWeb && window.tronWeb.contract ? window.tronWeb : null); if (!tw) throw new Error("TronLink was not detected or has not authorized this site. Open this page in TronLink, tap Connect, and approve access."); return tw; }
 async function connect(){
   try{
     if(window.tronLink && window.tronLink.request) await window.tronLink.request({method:"tron_requestAccounts"});
-    const tw=tron();
+    const tw=getTronWeb();
     if(!tw.defaultAddress || !tw.defaultAddress.base58) throw new Error("Wallet did not provide an active address. Unlock TronLink and approve the connection.");
     wallet=tw.defaultAddress.base58;
     $("walletLabel").textContent=shortAddress(wallet);
