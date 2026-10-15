@@ -61,6 +61,7 @@ let wallet = "";
 let token = null;
 let tokenDecimals = 0;
 let walletProvider = null;
+let observedProvider = null;
 window.addEventListener("TIP6963:announceProvider", (event) => {
   const detail = event && event.detail;
   if (detail && detail.provider && detail.info && /tronlink/i.test(detail.info.name || "")) walletProvider = detail.provider;
@@ -94,11 +95,28 @@ function getTronWeb(){
   if(fallback && fallback.contract) return fallback;
   throw new Error("TronLink has not authorized this site yet. Tap Connect TronLink and approve access.");
 }
+function observeProvider(provider){
+  if(observedProvider===provider || typeof provider.on!=="function") return;
+  observedProvider=provider;
+  provider.on("accountsChanged", accounts=>{
+    wallet=Array.isArray(accounts)&&typeof accounts[0]==="string"?accounts[0]:"";
+    $("walletLabel").textContent=shortAddress(wallet);
+    if(!wallet) say("Wallet disconnected or locked. Reconnect before inspecting or sending.");
+  });
+  provider.on("chainChanged", ()=>{
+    $("network").textContent="Network changed in TronLink";
+    token=null;
+    say("Network changed. Reload token metadata and verify the contract address before sending.");
+  });
+}
 async function connect(){
   try{
     const provider=await findWalletProvider();
+    observeProvider(provider);
     let accounts=[];
-    if(typeof provider.request==="function"){
+    if(provider.tronWeb && provider.tronWeb.ready && provider.tronWeb.defaultAddress && provider.tronWeb.defaultAddress.base58){
+      accounts=[provider.tronWeb.defaultAddress.base58];
+    }else if(typeof provider.request==="function"){
       try{
         const result=await provider.request({method:"eth_requestAccounts"});
         if(Array.isArray(result)) accounts=result;
@@ -126,14 +144,6 @@ async function connect(){
     else say(message);
     throw e;
   }
-}
-if(window.tron && typeof window.tron.on==="function"){
-  window.tron.on("accountsChanged", accounts=>{
-    wallet=Array.isArray(accounts)&&typeof accounts[0]==="string"?accounts[0]:"";
-    $("walletLabel").textContent=shortAddress(wallet);
-    if(!wallet) say("Wallet disconnected or locked. Reconnect before inspecting or sending.");
-  });
-  window.tron.on("chainChanged", ()=>{ $("network").textContent="Network changed in TronLink"; token=null; say("Network changed. Reload token metadata and verify the contract address before sending."); });
 }
 async function inspect(){
   try{
