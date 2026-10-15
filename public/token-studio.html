@@ -60,6 +60,11 @@ const ABI = [
 let wallet = "";
 let token = null;
 let tokenDecimals = 0;
+let walletProvider = null;
+window.addEventListener("TIP6963:announceProvider", (event) => {
+  const detail = event && event.detail;
+  if (detail && detail.provider && detail.info && /tronlink/i.test(detail.info.name || "")) walletProvider = detail.provider;
+});
 function say(message){ $("status").textContent = message; }
 function shortAddress(a){ return a ? a.slice(0,7)+"…"+a.slice(-5) : "Not connected"; }
 function fmt(raw, decimals){ const n=BigInt(String(raw)); const base=10n**BigInt(decimals); const whole=n/base; const fraction=(n%base).toString().padStart(decimals,"0").replace(/0+$/,""); return whole.toString()+(fraction?"."+fraction:""); }
@@ -70,23 +75,69 @@ function rawAmount(value, decimals){
   if(raw<=0n) throw new Error("Amount must be greater than zero.");
   return raw.toString();
 }
-function getTronWeb(){ const provider = window.tron && typeof window.tron === "object" ? window.tron : window.tronLink; const tw = (provider && provider.tronWeb && provider.tronWeb.contract ? provider.tronWeb : null) || (window.tronWeb && window.tronWeb.contract ? window.tronWeb : null); if (!tw) throw new Error("TronLink was not detected or has not authorized this site. Open this page in TronLink, tap Connect, and approve access."); return tw; }
+async function findWalletProvider(){
+  if(walletProvider && typeof walletProvider.request === "function") return walletProvider;
+  if(window.tron && typeof window.tron === "object" && typeof window.tron.request === "function") return walletProvider=window.tron;
+  window.dispatchEvent(new Event("TIP6963:requestProvider"));
+  await new Promise(resolve=>setTimeout(resolve,300));
+  if(walletProvider && typeof walletProvider.request === "function") return walletProvider;
+  if(window.tronLink && typeof window.tronLink.request === "function") return walletProvider=window.tronLink;
+  throw new Error("TronLink was not detected. Open this page in the TronLink in-app browser or a browser with TronLink enabled, then try again.");
+}
+function getTronWeb(){
+  const providers=[walletProvider,window.tron,window.tronLink];
+  for(const provider of providers){
+    const tw=provider && provider.tronWeb;
+    if(tw && typeof tw==="object" && tw.contract) return tw;
+  }
+  const fallback=window.tronWeb;
+  if(fallback && fallback.contract) return fallback;
+  throw new Error("TronLink has not authorized this site yet. Tap Connect TronLink and approve access.");
+}
 async function connect(){
   try{
-    if(window.tronLink && window.tronLink.request) await window.tronLink.request({method:"tron_requestAccounts"});
-    const tw=getTronWeb();
-    if(!tw.defaultAddress || !tw.defaultAddress.base58) throw new Error("Wallet did not provide an active address. Unlock TronLink and approve the connection.");
-    wallet=tw.defaultAddress.base58;
+    const provider=await findWalletProvider();
+    let accounts=[];
+    if(typeof provider.request==="function"){
+      try{
+        const result=await provider.request({method:"eth_requestAccounts"});
+        if(Array.isArray(result)) accounts=result;
+      }catch(error){
+        if(![4200,-32601].includes(Number(error && error.code))) throw error;
+        const legacy=await provider.request({method:"tron_requestAccounts"});
+        if(Array.isArray(legacy)) accounts=legacy;
+        else if(legacy && Number(legacy.code)===4001) throw new Error("Connection was rejected in TronLink. Tap Connect and approve the request.");
+      }
+    }
+    let tw;
+    try{tw=getTronWeb();}catch(_){tw=null;}
+    if(!tw && window.tronWeb && window.tronWeb.contract) tw=window.tronWeb;
+    const address=(accounts.find(a=>typeof a==="string" && a.startsWith("T")))||(tw && tw.defaultAddress && tw.defaultAddress.base58);
+    if(!address) throw new Error("TronLink did not return an active account. Unlock your wallet and approve this site's connection.");
+    wallet=address;
     $("walletLabel").textContent=shortAddress(wallet);
-    $("network").textContent=(tw.fullNode && tw.fullNode.host) || "Wallet network";
+    $("network").textContent=(tw && tw.fullNode && tw.fullNode.host)||"Connected wallet network";
     say("Connected wallet: "+wallet+"\nCheck that TronLink is on the network where your token contract is deployed.");
-    return tw;
-  }catch(e){say(e.message||String(e));throw e;}
+    return tw || getTronWeb();
+  }catch(e){
+    const message=e && e.message ? e.message : String(e);
+    if(Number(e && e.code)===4001) say("Connection was rejected in TronLink. Tap Connect and approve the request.");
+    else if(Number(e && e.code)===-32000 || Number(e && e.code)===-32002) say("TronLink has another connection request pending or is temporarily rate-limiting requests. Finish the wallet prompt, then retry.");
+    else say(message);
+    throw e;
+  }
+}
+if(window.tron && typeof window.tron.on==="function"){
+  window.tron.on("accountsChanged", accounts=>{
+    wallet=Array.isArray(accounts)&&typeof accounts[0]==="string"?accounts[0]:"";
+    $("walletLabel").textContent=shortAddress(wallet);
+    if(!wallet) say("Wallet disconnected or locked. Reconnect before inspecting or sending.");
+  });
+  window.tron.on("chainChanged", ()=>{ $("network").textContent="Network changed in TronLink"; token=null; say("Network changed. Reload token metadata and verify the contract address before sending."); });
 }
 async function inspect(){
   try{
-    const tw=window.tronWeb && window.tronWeb.contract ? window.tronWeb : await connect();
-    if(!wallet && tw.defaultAddress && tw.defaultAddress.base58) wallet=tw.defaultAddress.base58;
+    const tw=await connect();
     const address=$("contract").value.trim();
     if(!tw.isAddress(address)) throw new Error("Enter a valid TRON contract address.");
     token=await tw.contract(ABI,address);
