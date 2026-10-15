@@ -27,7 +27,7 @@ This repository now includes a simple fixed-supply token contract and a TronLink
    - `initialWholeTokenSupply`: `1000000` (one million whole tokens)
 5. Approve the deployment in your own wallet and keep enough testnet TRX for network resources. Deployment is a real on-chain transaction and costs resources.
 6. Copy the resulting contract address and confirm its name, symbol, decimals, total supply, and deployer balance on the selected network's explorer. Confirm the raw total supply is `1000000000000000000000000` and the UI formats it as `1000000` tokens at 18 decimals.
-7. For the requested initial settings, use `tokenName = TRC20`, `tokenSymbol = VTRC` (rather than USDT), `tokenDecimals = 6`, and `initialWholeTokenSupply = 1000000`. This gives an initial raw supply of `1000000000000` smallest units, all assigned to the deployer. Only after testing, decide whether to deploy to Mainnet. Mainnet deployment costs real TRX and cannot be undone.
+7. The requested configuration is `tokenName = TRC20`, `tokenDecimals = 18`, and `initialWholeTokenSupply = 1000000`. The raw total supply is `1000000000000000000000000` base units (1e24), assigned entirely to the deployer. The requested `USDT` ticker remains blocked by the contract safeguard; use a distinct ticker such as `VTRC` or `TRC20`. Deploy to Mainnet only after testnet validation; Mainnet deployment costs real TRX and cannot be undone.
 
 ## Transfer and verify tokens
 
