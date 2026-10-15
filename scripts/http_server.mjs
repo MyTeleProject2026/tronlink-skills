@@ -4,6 +4,7 @@
  * No signing, private-key handling, shell interpolation, or transaction broadcast.
  */
 import http from "node:http";
+import { readFile } from "node:fs/promises";
 import { execFile } from "node:child_process";
 import { fileURLToPath } from "node:url";
 import { dirname, resolve } from "node:path";
@@ -106,21 +107,35 @@ function runCommand(command, args) {
 }
 const server = http.createServer(async (req, res) => {
   const url = new URL(req.url || "/", `http://${req.headers.host || "localhost"}`);
+  if (req.method === "GET" && url.pathname === "/token-studio") {
+    try {
+      const page = await readFile(resolve(root, "public/token-studio.html"), "utf8");
+      res.writeHead(200, {
+        "Content-Type": "text/html; charset=utf-8",
+        "Cache-Control": "no-store",
+        "X-Content-Type-Options": "nosniff"
+      });
+      return res.end(page);
+    } catch {
+      return send(res, 500, { error: "Token Studio page is unavailable" });
+    }
+  }
   if (req.method === "GET" && (url.pathname === "/health" || url.pathname === "/healthz")) {
     return send(res, 200, { status: "ok", service: "tronlink-skills-api", network: process.env.TRON_NETWORK || "mainnet", node: process.version });
   }
   if (req.method === "GET" && url.pathname === "/") {
     return send(res, 200, {
       name: "TronLink Skills API",
-      description: "Read-only TRON wallet, token, market, swap-quote, resource, and staking queries.",
+      description: "Read-only TRON wallet, token, market, swap-quote, resource, and staking queries, plus a TronLink-connected token transfer page.",
       health: "/health",
+      tokenStudio: "/token-studio",
       commands: Object.keys(commandOptions),
       usage: { method: "POST", path: "/api/command", body: { command: "wallet-balance", args: { address: "T..." } } },
-      note: "Read-only API. Never submit private keys or seed phrases. No signing or transaction broadcast is supported."
+      note: "The JSON API is read-only. Token Studio requests transfers through TronLink, where the user reviews and signs locally. Never submit private keys or seed phrases."
     });
   }
   if (req.method !== "POST" || url.pathname !== "/api/command") {
-    return send(res, 404, { error: "Not found", endpoints: ["GET /", "GET /health", "POST /api/command"] });
+    return send(res, 404, { error: "Not found", endpoints: ["GET /", "GET /health", "GET /token-studio", "POST /api/command"] });
   }
   if (rateLimited(req)) return send(res, 429, { error: "Rate limit exceeded. Try again in one minute." });
   try {
