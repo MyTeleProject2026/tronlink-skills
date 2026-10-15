@@ -20,22 +20,24 @@ This repository now includes a simple fixed-supply token contract and a TronLink
 1. Open the official TRON smart-contract guide: https://developers.tron.network/docs/smart-contract-development
 2. Use TRON's official TronIDE or a locally controlled TronBox/TronWeb development setup.
 3. Compile `contracts/CustomTRC20.sol` with Solidity 0.8.20 or a compatible compiler, keeping the compiler settings and ABI/bytecode from the compilation output.
-4. Deploy to Shasta or Nile testnet first. Constructor parameters are:
+4. Deploy to Shasta or Nile testnet first. After the testnet checks pass, switch TronLink to TRON Mainnet for the intended production deployment. Constructor parameters are:
    - `tokenName`: your chosen public token name
-   - `tokenSymbol`: your distinct ticker, for example `VTRC` (the exact symbol `USDT` is rejected)
-   - `tokenDecimals`: 6 or 18 are common choices; decide before deployment
-   - `initialWholeTokenSupply`: positive integer number of whole tokens
+   - `tokenSymbol`: a distinct ticker such as `VTRC` or `TRC20` (the exact symbol `USDT` is rejected)
+   - `tokenDecimals`: `18`
+   - `initialWholeTokenSupply`: `1000000` (one million whole tokens)
 5. Approve the deployment in your own wallet and keep enough testnet TRX for network resources. Deployment is a real on-chain transaction and costs resources.
-6. Copy the resulting contract address and confirm its name, symbol, decimals, total supply, and deployer balance on the testnet explorer.
+6. Copy the resulting contract address and confirm its name, symbol, decimals, total supply, and deployer balance on the selected network's explorer. Confirm the raw total supply is `1000000000000000000000000` and the UI formats it as `1000000` tokens at 18 decimals.
 7. For the requested initial settings, use `tokenName = TRC20`, `tokenSymbol = VTRC` (rather than USDT), `tokenDecimals = 6`, and `initialWholeTokenSupply = 1000000`. This gives an initial raw supply of `1000000000000` smallest units, all assigned to the deployer. Only after testing, decide whether to deploy to Mainnet. Mainnet deployment costs real TRX and cannot be undone.
 
-## Transfer tokens
+## Transfer and verify tokens
 
 1. Open `/token-studio` using the TronLink browser extension or TronLink mobile in-app browser.
 2. Connect the wallet and ensure it is on the same network as the deployed contract.
-3. Paste the contract address, load metadata, and inspect the balance.
-4. Enter the recipient address and amount. Verify both the contract and recipient, then approve the transaction in TronLink.
-5. Wait for chain confirmation and verify the transaction on TRONSCAN.
+3. Paste the contract address, load metadata, and inspect the deployer balance. Check name `TRC20`, the distinct ticker you deployed, decimals `18`, and total supply `1000000`.
+4. On the first test, send a small amount (for example, `0.1`) to a second address you control. Verify the recipient address and contract address carefully, then approve the transaction in TronLink.
+5. Wait for confirmation and open the transaction ID on [TRONSCAN](https://tronscan.org/). Confirm success status and a `Transfer` event with the expected sender, recipient, and raw amount. At 18 decimals, `0.1` token is `100000000000000000` base units.
+6. Refresh Token Studio and confirm the sender balance decreased by the transfer amount and the recipient balance increased by the same amount. Account for any other transactions separately.
+7. Verify the deployed source on [TRONSCAN Contract Verification](https://tronscan.org/#/contracts/verify) using the exact compiler version, optimization setting, and runs from the deployment build. Verification compares source and deployed bytecode; it does not certify the token as safe or affiliated with another issuer.
 
 The transfer page does not hold keys. Signing and authorization happen in TronLink. Do not add private keys or seed phrases to Render environment variables or HTTP requests.
 
