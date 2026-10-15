@@ -25,6 +25,7 @@ contract CustomTRC20 {
     ) {
         require(bytes(tokenName).length > 0 && bytes(tokenName).length <= 64, "Invalid name");
         require(bytes(tokenSymbol).length > 0 && bytes(tokenSymbol).length <= 16, "Invalid symbol");
+        require(keccak256(bytes(tokenSymbol)) != keccak256(bytes("USDT")), "Use a distinct symbol; do not impersonate USDT");
         require(tokenDecimals <= 18, "Decimals must be <= 18");
         require(initialWholeTokenSupply > 0, "Supply must be > 0");
 
