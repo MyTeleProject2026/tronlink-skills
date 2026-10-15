@@ -10,7 +10,7 @@ This repository now includes a simple fixed-supply token contract and a TronLink
 
 ## Important token design details
 
-- Token name and symbol are constructor parameters and may match a name/symbol used by another token. Symbols are not unique identifiers. Always identify a token by its deployed contract address and never imply that a custom token is official USDT or another third-party asset.
+- Token name and symbol are not unique identifiers. This project rejects the exact `USDT` symbol in the constructor so a custom token is not confused with Tether USD. Use a distinct symbol such as `VTRC` or `TRC20`. The official TRON Mainnet USDT contract is `TR7NHqjeKQxGTCi8q8ZY4pL8otSzgjLj6t`; this custom token is not affiliated with Tether.
 - The contract mints the entire initial supply to the deploying wallet once. There is no later mint function or arbitrary balance-edit function.
 - `initialWholeTokenSupply` is the number of whole tokens. The contract multiplies it by `10 ** decimals`. Choose decimals from 0 through 18 and test with a small supply first.
 - This contract is a minimal implementation for learning and review, not an audited financial product. Review and test it before any Mainnet deployment.
@@ -22,12 +22,12 @@ This repository now includes a simple fixed-supply token contract and a TronLink
 3. Compile `contracts/CustomTRC20.sol` with Solidity 0.8.20 or a compatible compiler, keeping the compiler settings and ABI/bytecode from the compilation output.
 4. Deploy to Shasta or Nile testnet first. Constructor parameters are:
    - `tokenName`: your chosen public token name
-   - `tokenSymbol`: your chosen ticker
+   - `tokenSymbol`: your distinct ticker, for example `VTRC` (the exact symbol `USDT` is rejected)
    - `tokenDecimals`: 6 or 18 are common choices; decide before deployment
    - `initialWholeTokenSupply`: positive integer number of whole tokens
 5. Approve the deployment in your own wallet and keep enough testnet TRX for network resources. Deployment is a real on-chain transaction and costs resources.
 6. Copy the resulting contract address and confirm its name, symbol, decimals, total supply, and deployer balance on the testnet explorer.
-7. Only after testing, decide whether to deploy to Mainnet. Mainnet deployment costs real TRX and cannot be undone.
+7. For the requested initial settings, use `tokenName = TRC20`, `tokenSymbol = VTRC` (rather than USDT), `tokenDecimals = 6`, and `initialWholeTokenSupply = 1000000`. This gives an initial raw supply of `1000000000000` smallest units, all assigned to the deployer. Only after testing, decide whether to deploy to Mainnet. Mainnet deployment costs real TRX and cannot be undone.
 
 ## Transfer tokens
 
