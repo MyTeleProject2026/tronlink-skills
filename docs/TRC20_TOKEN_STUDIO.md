@@ -2,7 +2,7 @@
 
 This repository includes a fixed-supply token contract and a Token Studio page with a wallet selector for supported non-TronLink TRON providers (OKX Wallet, Bitget Wallet, TokenPocket, and Trust Wallet where their TRON provider is exposed). Provider support depends on the wallet version and browser context; the integration is not guaranteed to work in every wallet environment.
 
-## Files
+## Sponsored Mainnet deployment\n\nFor a sponsor-funded Mainnet workflow, source/constructor manifest, recipient ownership warning, wallet signing boundaries, and TRONSCAN verification checklist, see [`SPONSORED_MAINNET_DEPLOYMENT.md`](./SPONSORED_MAINNET_DEPLOYMENT.md). Mainnet deployment remains blocked operationally until a sponsor agrees to fund the transaction or resources.\n\n## Files
 
 - `contracts/CustomTRC20.sol`: a standard fixed-supply token contract with `name`, `symbol`, `decimals`, `totalSupply`, `balanceOf`, `transfer`, `approve`, and `transferFrom`.
 - `public/token-studio.html`: reads metadata/balances and requests transfers through a selected wallet's injected TRON provider. It never asks for a seed phrase or private key. It does not deploy contracts.
