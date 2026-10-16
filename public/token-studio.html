@@ -13,7 +13,7 @@ main{width:min(960px,100%);margin:auto;padding:28px 18px 60px}.top{display:flex;
 </head>
 <body>
 <main>
-  <div class="top"><div class="brand">TRON WALLET TOOLS · TOKEN STUDIO</div><div class="actions" style="margin-top:0"><select id="walletChoice" aria-label="Choose wallet" style="max-width:210px;padding:12px;border:1px solid var(--line);border-radius:10px;background:#0a1120;color:var(--text);font:inherit"><option value="okx">OKX Wallet</option><option value="bitget">Bitget Wallet</option><option value="tokenpocket">TokenPocket</option><option value="trust">Trust Wallet</option></select><button id="connect" type="button">Connect wallet</button></div></div>
+  <div class="top"><div class="brand">TRON WALLET TOOLS · TOKEN STUDIO</div><div class="actions" style="margin-top:0"><select id="walletChoice" aria-label="Choose wallet" style="max-width:210px;padding:12px;border:1px solid var(--line);border-radius:10px;background:#0a1120;color:var(--text);font:inherit"><option value="okx">OKX Wallet</option><option value="bitget">Bitget Wallet</option><option value="tokenpocket">TokenPocket</option></select><button id="connect" type="button">Connect wallet</button></div></div>
   <h1>Your TRC-20 token,<br>with wallet-approved transfers.</h1>
   <p class="sub">Read token metadata and balances, then transfer tokens using your connected TRON wallet. Your private key stays inside the wallet. This page does not create or alter blockchain balances by itself.</p>
   <section class="panel">
@@ -77,22 +77,16 @@ async function findWalletProvider(){
   const candidates={
     okx:[window.okxwallet && window.okxwallet.tronLink],
     bitget:[window.bitkeep && window.bitkeep.tron,window.bitkeep && window.bitkeep.tronLink],
-    tokenpocket:[window.tokenpocket && window.tokenpocket.tron,window.tron],
-    trust:[window.tron]
+    tokenpocket:[window.tokenpocket && window.tokenpocket.tron]
   };
   const provider=(candidates[choice]||[]).find(p=>p && (typeof p.request==="function" || p.tronWeb));
   if(provider) return walletProvider=provider;
   throw new Error("The selected wallet's TRON provider was not detected. Open Token Studio in that wallet's supported browser or enable its TRON DApp provider. This page does not fall back to TronLink.");
 }
 function getTronWeb(){
-  const providers=[walletProvider,window.okxwallet&&window.okxwallet.tronLink,window.bitkeep&&window.bitkeep.tron,window.bitkeep&&window.bitkeep.tronLink,window.tokenpocket&&window.tokenpocket.tron,window.tron];
-  for(const provider of providers){
-    const tw=provider && provider.tronWeb;
-    if(tw && typeof tw==="object" && tw.contract) return tw;
-  }
-  const fallback=window.tronWeb || (window.okxwallet&&window.okxwallet.tronLink&&window.okxwallet.tronLink.tronWeb) || (window.bitkeep&&window.bitkeep.tron&&window.bitkeep.tron.tronWeb);
-  if(fallback && fallback.contract) return fallback;
-  throw new Error("The selected wallet has not authorized this site yet. Tap Connect wallet and approve access.");
+  const tw=walletProvider && walletProvider.tronWeb;
+  if(tw && typeof tw==="object" && typeof tw.contract==="function") return tw;
+  throw new Error("The selected wallet did not expose its own compatible TronWeb instance. No generic provider fallback is used, to avoid accidentally signing with another wallet. Open this page inside the selected wallet's supported DApp browser.");
 }
 function observeProvider(provider){
   if(observedProvider===provider || typeof provider.on!=="function") return;
