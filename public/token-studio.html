@@ -115,16 +115,15 @@ async function connect(){
         if(Array.isArray(result)) accounts=result;
       }catch(error){
         if(![4200,-32601].includes(Number(error && error.code))) throw error;
-        const legacy=await provider.request({method:"tron_requestAccounts"});
+        const legacy=await provider.request({method:"eth_requestAccounts"});
         if(Array.isArray(legacy)) accounts=legacy;
-        else if(legacy && Number(legacy.code)===4001) throw new Error("Connection was rejected in TronLink. Tap Connect and approve the request.");
+        else if(legacy && Number(legacy.code)===4001) throw new Error("Wallet connection was rejected. Tap Connect wallet and approve the request.");
       }
     }
     let tw;
     try{tw=getTronWeb();}catch(_){tw=null;}
-    if(!tw && window.tronWeb && window.tronWeb.contract) tw=window.tronWeb;
     const address=(accounts.find(a=>typeof a==="string" && a.startsWith("T")))||(tw && tw.defaultAddress && tw.defaultAddress.base58);
-    if(!address) throw new Error("The selected wallet did not return an active TRON account. Unlock your wallet and approve this site's connection.");
+    if(!address) throw new Error("The selected wallet did not return an active TRON account. Unlock it and approve this site's connection.");
     wallet=address;
     $("walletLabel").textContent=shortAddress(wallet);
     $("network").textContent=(tw && tw.fullNode && tw.fullNode.host)||"Connected wallet network";
@@ -133,7 +132,7 @@ async function connect(){
   }catch(e){
     const message=e && e.message ? e.message : String(e);
     if(Number(e && e.code)===4001) say("Connection was rejected in TronLink. Tap Connect and approve the request.");
-    else if(Number(e && e.code)===-32000 || Number(e && e.code)===-32002) say("TronLink has another connection request pending or is temporarily rate-limiting requests. Finish the wallet prompt, then retry.");
+    else if(Number(e && e.code)===-32000 || Number(e && e.code)===-32002) say("The selected wallet has a pending request or is temporarily busy. Finish the wallet prompt, then retry.");
     else say(message);
     throw e;
   }
