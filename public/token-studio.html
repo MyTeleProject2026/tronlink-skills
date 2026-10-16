@@ -62,10 +62,6 @@ let token = null;
 let tokenDecimals = 0;
 let walletProvider = null;
 let observedProvider = null;
-window.addEventListener("TIP6963:announceProvider", (event) => {
-  const detail = event && event.detail;
-  if (detail && detail.provider && detail.info && /tronlink/i.test(detail.info.name || "")) walletProvider = detail.provider;
-});
 function say(message){ $("status").textContent = message; }
 function shortAddress(a){ return a ? a.slice(0,7)+"…"+a.slice(-5) : "Not connected"; }
 function fmt(raw, decimals){ const n=BigInt(String(raw)); const base=10n**BigInt(decimals); const whole=n/base; const fraction=(n%base).toString().padStart(decimals,"0").replace(/0+$/,""); return whole.toString()+(fraction?"."+fraction:""); }
@@ -138,7 +134,7 @@ async function connect(){
     wallet=address;
     $("walletLabel").textContent=shortAddress(wallet);
     $("network").textContent=(tw && tw.fullNode && tw.fullNode.host)||"Connected wallet network";
-    say("Connected wallet: "+wallet+"\nCheck that TronLink is on the network where your token contract is deployed.");
+    say("Connected wallet: "+wallet+"\nVerify that the selected wallet is on the same network as your token contract.");
     return tw || getTronWeb();
   }catch(e){
     const message=e && e.message ? e.message : String(e);
@@ -180,7 +176,7 @@ async function send(){
     if(!tw.isAddress(recipient)) throw new Error("Enter a valid recipient TRON address.");
     const amount=rawAmount($("amount").value.trim(),tokenDecimals);
     const symbol=$("symbol").textContent.split(" / ")[0];
-    if(!confirm("Send "+fmt(amount,tokenDecimals)+" "+symbol+" from "+wallet+" to "+recipient+"?\n\nCheck the contract address and network in TronLink before confirming.")) return;
+    if(!confirm("Send "+fmt(amount,tokenDecimals)+" "+symbol+" from "+wallet+" to "+recipient+"?\n\nCheck the contract address and network in your selected wallet before confirming.")) return;
     say("Waiting for wallet approval…");
     const result=await token.transfer(recipient,amount).send({feeLimit:100000000, shouldPollResponse:true});
     const txid=typeof result==="string"?result:(result&&result.txid)||JSON.stringify(result);
