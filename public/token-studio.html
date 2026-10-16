@@ -77,21 +77,24 @@ function rawAmount(value, decimals){
   return raw.toString();
 }
 async function findWalletProvider(){
-  if(walletProvider && typeof walletProvider.request === "function") return walletProvider;
-  if(window.tron && typeof window.tron === "object" && typeof window.tron.request === "function") return walletProvider=window.tron;
-  window.dispatchEvent(new Event("TIP6963:requestProvider"));
-  await new Promise(resolve=>setTimeout(resolve,300));
-  if(walletProvider && typeof walletProvider.request === "function") return walletProvider;
-  if(window.tronLink && typeof window.tronLink.request === "function") return walletProvider=window.tronLink;
-  throw new Error("TronLink was not detected. Open this page in the TronLink in-app browser or a browser with TronLink enabled, then try again.");
+  const choice=$("walletChoice") ? $("walletChoice").value : "okx";
+  const candidates={
+    okx:[window.okxwallet && window.okxwallet.tronLink],
+    bitget:[window.bitkeep && window.bitkeep.tron,window.bitkeep && window.bitkeep.tronLink],
+    tokenpocket:[window.tokenpocket && window.tokenpocket.tron,window.tron],
+    trust:[window.tron]
+  };
+  const provider=(candidates[choice]||[]).find(p=>p && (typeof p.request==="function" || p.tronWeb));
+  if(provider) return walletProvider=provider;
+  throw new Error("The selected wallet's TRON provider was not detected. Open Token Studio in that wallet's supported browser or enable its TRON DApp provider. This page does not fall back to TronLink.");
 }
 function getTronWeb(){
-  const providers=[walletProvider,window.tron,window.tronLink];
+  const providers=[walletProvider,window.okxwallet&&window.okxwallet.tronLink,window.bitkeep&&window.bitkeep.tron,window.bitkeep&&window.bitkeep.tronLink,window.tokenpocket&&window.tokenpocket.tron,window.tron];
   for(const provider of providers){
     const tw=provider && provider.tronWeb;
     if(tw && typeof tw==="object" && tw.contract) return tw;
   }
-  const fallback=window.tronWeb;
+  const fallback=window.tronWeb || (window.okxwallet&&window.okxwallet.tronLink&&window.okxwallet.tronLink.tronWeb) || (window.bitkeep&&window.bitkeep.tron&&window.bitkeep.tron.tronWeb);
   if(fallback && fallback.contract) return fallback;
   throw new Error("The selected wallet has not authorized this site yet. Tap Connect wallet and approve access.");
 }
@@ -118,7 +121,7 @@ async function connect(){
       accounts=[provider.tronWeb.defaultAddress.base58];
     }else if(typeof provider.request==="function"){
       try{
-        const result=await provider.request({method:"eth_requestAccounts"});
+        const result=await provider.request({method:"tron_requestAccounts"});
         if(Array.isArray(result)) accounts=result;
       }catch(error){
         if(![4200,-32601].includes(Number(error && error.code))) throw error;
@@ -131,7 +134,7 @@ async function connect(){
     try{tw=getTronWeb();}catch(_){tw=null;}
     if(!tw && window.tronWeb && window.tronWeb.contract) tw=window.tronWeb;
     const address=(accounts.find(a=>typeof a==="string" && a.startsWith("T")))||(tw && tw.defaultAddress && tw.defaultAddress.base58);
-    if(!address) throw new Error("TronLink did not return an active account. Unlock your wallet and approve this site's connection.");
+    if(!address) throw new Error("The selected wallet did not return an active TRON account. Unlock your wallet and approve this site's connection.");
     wallet=address;
     $("walletLabel").textContent=shortAddress(wallet);
     $("network").textContent=(tw && tw.fullNode && tw.fullNode.host)||"Connected wallet network";
