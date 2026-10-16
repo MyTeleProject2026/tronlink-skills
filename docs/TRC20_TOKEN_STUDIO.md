@@ -1,11 +1,11 @@
 # Custom TRC-20 token workflow
 
-This repository now includes a simple fixed-supply token contract and a TronLink-connected token transfer page.
+This repository includes a fixed-supply token contract and a Token Studio page with a wallet selector for supported non-TronLink TRON providers (OKX Wallet, Bitget Wallet, TokenPocket, and Trust Wallet where their TRON provider is exposed). Provider support depends on the wallet version and browser context; the integration is not guaranteed to work in every wallet environment.
 
 ## Files
 
 - `contracts/CustomTRC20.sol`: a standard fixed-supply token contract with `name`, `symbol`, `decimals`, `totalSupply`, `balanceOf`, `transfer`, `approve`, and `transferFrom`.
-- `public/token-studio.html`: reads metadata/balances and submits token transfers through the user's connected TronLink wallet. It never asks for a seed phrase or private key.
+- `public/token-studio.html`: reads metadata/balances and requests transfers through a selected wallet's injected TRON provider. It never asks for a seed phrase or private key. It does not deploy contracts.
 - `https://tronlink-skills-api.onrender.com/token-studio`: served by the Render API once the HTTP route is deployed.
 
 ## Important token design details
@@ -25,13 +25,13 @@ This repository now includes a simple fixed-supply token contract and a TronLink
    - `tokenSymbol`: a distinct ticker such as `VTRC` or `TRC20` (the exact symbol `USDT` is rejected)
    - `tokenDecimals`: `18`
    - `initialWholeTokenSupply`: `1000000` (one million whole tokens)
-5. Approve the deployment in your own wallet and keep enough testnet TRX for network resources. Deployment is a real on-chain transaction and costs resources.
+5. For this project's current zero-personal-cost goal, do not submit a Mainnet deployment until a willing sponsor has agreed to pay or delegate resources. A non-TronLink wallet does not remove network costs. This repository's Token Studio currently does not deploy contracts; use a separate deployment interface and have the funded signer approve the transaction. Keep signing outside Render.
 6. Copy the resulting contract address and confirm its name, symbol, decimals, total supply, and deployer balance on the selected network's explorer. Confirm the raw total supply is `1000000000000000000000000` and the UI formats it as `1000000` tokens at 18 decimals.
 7. The requested configuration is `tokenName = TRC20`, `tokenDecimals = 18`, and `initialWholeTokenSupply = 1000000`. The raw total supply is `1000000000000000000000000` base units (1e24), assigned entirely to the deployer. The requested `USDT` ticker remains blocked by the contract safeguard; use a distinct ticker such as `VTRC` or `TRC20`. Deploy to Mainnet only after testnet validation; Mainnet deployment costs real TRX and cannot be undone.
 
 ## Transfer and verify tokens
 
-1. Open `/token-studio` using the TronLink browser extension or TronLink mobile in-app browser.
+1. Open `/token-studio` in the selected wallet's supported browser or a browser where its TRON provider is injected. Select OKX Wallet, Bitget Wallet, TokenPocket, or Trust Wallet. If the selected provider is unavailable, use that wallet's official DApp browser or supported extension; the page intentionally does not fall back to TronLink.
 2. Connect the wallet and ensure it is on the same network as the deployed contract.
 3. Paste the contract address, load metadata, and inspect the deployer balance. Check name `TRC20`, the distinct ticker you deployed, decimals `18`, and total supply `1000000`.
 4. On the first test, send a small amount (for example, `0.1`) to a second address you control. Verify the recipient address and contract address carefully, then approve the transaction in TronLink.
@@ -39,7 +39,7 @@ This repository now includes a simple fixed-supply token contract and a TronLink
 6. Refresh Token Studio and confirm the sender balance decreased by the transfer amount and the recipient balance increased by the same amount. Account for any other transactions separately.
 7. Verify the deployed source on [TRONSCAN Contract Verification](https://tronscan.org/#/contracts/verify) using the exact compiler version, optimization setting, and runs from the deployment build. Verification compares source and deployed bytecode; it does not certify the token as safe or affiliated with another issuer.
 
-The transfer page does not hold keys. Signing and authorization happen in TronLink. Do not add private keys or seed phrases to Render environment variables or HTTP requests.
+The transfer page does not hold keys. Signing and authorization happen in the selected wallet. Never add private keys or seed phrases to Render environment variables, source code, logs, or HTTP requests. This page does not yet implement a deployment transaction or sponsored deployment flow.
 
 ## API scope
 
