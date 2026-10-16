@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="theme-color" content="#0b1020">
-<title>TRC-20 Token Studio · TronLink Skills</title>
+<title>TRC-20 Token Studio · TRON Wallets</title>
 <style>
 :root{color-scheme:dark;--bg:#0b1020;--panel:#121a2d;--line:#263653;--text:#eef4ff;--muted:#9eacc6;--accent:#65e0c1;--danger:#ff9b9b}
 *{box-sizing:border-box}body{margin:0;background:radial-gradient(900px 600px at 10% -10%,#20375a 0%,transparent 60%),var(--bg);color:var(--text);font:15px/1.5 system-ui,-apple-system,Segoe UI,sans-serif}
@@ -13,9 +13,9 @@ main{width:min(960px,100%);margin:auto;padding:28px 18px 60px}.top{display:flex;
 </head>
 <body>
 <main>
-  <div class="top"><div class="brand">TRONLINK SKILLS · TOKEN STUDIO</div><button id="connect" type="button">Connect TronLink</button></div>
+  <div class="top"><div class="brand">TRON WALLET TOOLS · TOKEN STUDIO</div><div class="actions" style="margin-top:0"><select id="walletChoice" aria-label="Choose wallet" style="max-width:210px;padding:12px;border:1px solid var(--line);border-radius:10px;background:#0a1120;color:var(--text);font:inherit"><option value="okx">OKX Wallet</option><option value="bitget">Bitget Wallet</option><option value="tokenpocket">TokenPocket</option><option value="trust">Trust Wallet</option></select><button id="connect" type="button">Connect wallet</button></div></div>
   <h1>Your TRC-20 token,<br>with wallet-approved transfers.</h1>
-  <p class="sub">Read token metadata and balances, then transfer tokens using your connected TronLink wallet. Your private key stays inside the wallet. This page does not create or alter blockchain balances by itself.</p>
+  <p class="sub">Read token metadata and balances, then transfer tokens using your connected TRON wallet. Your private key stays inside the wallet. This page does not create or alter blockchain balances by itself.</p>
   <section class="panel">
     <h2>1. Connect and inspect a deployed token</h2>
     <div class="grid">
@@ -39,8 +39,8 @@ main{width:min(960px,100%);margin:auto;padding:28px 18px 60px}.top{display:flex;
       <div class="wide"><label for="recipient">Recipient TRON address</label><input id="recipient" autocomplete="off" placeholder="T..."></div>
       <div><label for="amount">Amount in whole tokens</label><input id="amount" inputmode="decimal" placeholder="e.g. 25.5"></div>
     </div>
-    <div class="actions"><button id="send" type="button">Review and send with TronLink</button></div>
-    <div id="status" class="status" role="status" aria-live="polite">Connect TronLink to begin. Use the TronLink browser extension or the TronLink in-app browser.</div>
+    <div class="actions"><button id="send" type="button">Review and send with wallet</button></div>
+    <div id="status" class="status" role="status" aria-live="polite">Choose a supported TRON wallet, then connect from a browser environment where its TRON provider is available.</div>
   </section>
   <section class="panel">
     <div class="warning"><strong>Safety:</strong> Never enter a seed phrase or private key on this page. Token names and symbols are not unique, so always verify the contract address. A successful wallet prompt is not final confirmation; wait for the transaction to be confirmed on-chain.</div>
@@ -93,7 +93,7 @@ function getTronWeb(){
   }
   const fallback=window.tronWeb;
   if(fallback && fallback.contract) return fallback;
-  throw new Error("TronLink has not authorized this site yet. Tap Connect TronLink and approve access.");
+  throw new Error("The selected wallet has not authorized this site yet. Tap Connect wallet and approve access.");
 }
 function observeProvider(provider){
   if(observedProvider===provider || typeof provider.on!=="function") return;
@@ -178,7 +178,7 @@ async function send(){
     const amount=rawAmount($("amount").value.trim(),tokenDecimals);
     const symbol=$("symbol").textContent.split(" / ")[0];
     if(!confirm("Send "+fmt(amount,tokenDecimals)+" "+symbol+" from "+wallet+" to "+recipient+"?\n\nCheck the contract address and network in TronLink before confirming.")) return;
-    say("Waiting for TronLink approval…");
+    say("Waiting for wallet approval…");
     const result=await token.transfer(recipient,amount).send({feeLimit:100000000, shouldPollResponse:true});
     const txid=typeof result==="string"?result:(result&&result.txid)||JSON.stringify(result);
     say("Wallet returned a transaction result: "+txid+"\nCheck the transaction on TRONSCAN and reload the balance after it is confirmed.");
