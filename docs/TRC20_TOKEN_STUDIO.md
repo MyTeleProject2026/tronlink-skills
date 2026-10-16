@@ -1,6 +1,6 @@
 # Custom TRC-20 token workflow
 
-This repository includes a fixed-supply token contract and a Token Studio page with a wallet selector for supported non-TronLink TRON providers (OKX Wallet, Bitget Wallet, TokenPocket, and Trust Wallet where their TRON provider is exposed). Provider support depends on the wallet version and browser context; the integration is not guaranteed to work in every wallet environment.
+This repository includes a fixed-supply token contract and a Token Studio page with a wallet selector for supported non-TronLink TRON providers (OKX Wallet, Bitget Wallet, and TokenPocket where their TRON provider is exposed). Provider support depends on the wallet version and browser context; the integration is not guaranteed to work in every wallet environment.
 
 ## Sponsored Mainnet deployment\n\nFor a sponsor-funded Mainnet workflow, source/constructor manifest, recipient ownership warning, wallet signing boundaries, and TRONSCAN verification checklist, see [`SPONSORED_MAINNET_DEPLOYMENT.md`](./SPONSORED_MAINNET_DEPLOYMENT.md). Mainnet deployment remains blocked operationally until a sponsor agrees to fund the transaction or resources.\n\n## Files
 
@@ -31,7 +31,7 @@ This repository includes a fixed-supply token contract and a Token Studio page w
 
 ## Transfer and verify tokens
 
-1. Open `/token-studio` in the selected wallet's supported browser or a browser where its TRON provider is injected. Select OKX Wallet, Bitget Wallet, TokenPocket, or Trust Wallet. If the selected provider is unavailable, use that wallet's official DApp browser or supported extension; the page intentionally does not fall back to TronLink.
+1. Open `/token-studio` in the selected wallet's supported browser or a browser where its TRON provider is injected. Select OKX Wallet, Bitget Wallet, or TokenPocket. If the selected provider is unavailable, use that wallet's official DApp browser or supported extension; the page intentionally does not fall back to TronLink.
 2. Connect the wallet and ensure it is on the same network as the deployed contract.
 3. Paste the contract address, load metadata, and inspect the deployer balance. Check name `TRC20`, the distinct ticker you deployed, decimals `18`, and total supply `1000000`.
 4. On the first test, send a small amount (for example, `0.1`) to a second address you control. Verify the recipient address and contract address carefully, then approve the transaction in TronLink.
@@ -39,7 +39,7 @@ This repository includes a fixed-supply token contract and a Token Studio page w
 6. Refresh Token Studio and confirm the sender balance decreased by the transfer amount and the recipient balance increased by the same amount. Account for any other transactions separately.
 7. Verify the deployed source on [TRONSCAN Contract Verification](https://tronscan.org/#/contracts/verify) using the exact compiler version, optimization setting, and runs from the deployment build. Verification compares source and deployed bytecode; it does not certify the token as safe or affiliated with another issuer.
 
-The transfer page does not hold keys. Signing and authorization happen in the selected wallet. Never add private keys or seed phrases to Render environment variables, source code, logs, or HTTP requests. This page does not yet implement a deployment transaction or sponsored deployment flow.
+The current wallet selector uses wallet-specific injected providers rather than the official unified TronWallet Adapter SDK. It is an initial integration and still requires end-to-end testing with each supported wallet/version. The transfer page does not hold keys. Signing and authorization happen in the selected wallet. Never add private keys or seed phrases to Render environment variables, source code, logs, or HTTP requests. This page does not yet implement a deployment transaction or sponsored deployment flow.
 
 ## API scope
 
