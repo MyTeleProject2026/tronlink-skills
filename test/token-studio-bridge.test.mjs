@@ -27,7 +27,8 @@ test("bridge status route serves a read-only page with no-store security headers
   assert.match(bridgePage, /does not independently verify/i);
 });
 
-test("wallet transaction status strings contain actual newline escapes, not literal backslash-n", () => {
-  assert.match(page, /Transaction submitted: "\+txid\+"\\nChecking chain confirmation/);
-  assert.doesNotMatch(page, /txid\+"\\\\nChecking chain confirmation/);
+test("wallet transaction status strings use newline escapes rather than literal backslash-n", () => {
+  assert.ok(page.includes('say("Transaction submitted: "+txid+"\\nChecking chain confirmation…");'));
+  assert.ok(page.includes('say("Transaction confirmed on TRON: "+txid+"\\nRefreshing token balance…");'));
+  assert.equal(page.includes('txid+"\\\\nChecking chain confirmation'), false);
 });
