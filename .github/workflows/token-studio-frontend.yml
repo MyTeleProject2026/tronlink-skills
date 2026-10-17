@@ -1,0 +1,36 @@
+name: Token Studio frontend build
+
+on:
+  push:
+    paths:
+      - "frontend/**"
+      - "package.json"
+      - ".github/workflows/token-studio-frontend.yml"
+  pull_request:
+    paths:
+      - "frontend/**"
+      - "package.json"
+      - ".github/workflows/token-studio-frontend.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  frontend-build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: "npm"
+          cache-dependency-path: frontend/package-lock.json
+      - name: Install frontend dependencies
+        working-directory: frontend
+        run: npm install --no-audit --no-fund
+      - name: Build production frontend
+        working-directory: frontend
+        run: npm run build
+      - name: Verify generated entrypoint
+        run: test -s public/token-studio-app/index.html
