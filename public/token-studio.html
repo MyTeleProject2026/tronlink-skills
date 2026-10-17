@@ -61,7 +61,8 @@ let wallet = "";
 let token = null;
 let tokenDecimals = 0;
 let walletProvider = null;
-let observedProvider = null;\nlet activeNetworkKey = "";
+let observedProvider = null;
+let activeNetworkKey = "";
 const READ_RETRIES = 3;
 const sleep = ms => new Promise(resolve => setTimeout(resolve, ms));
 async function readWithBackoff(operation, label){
@@ -218,8 +219,12 @@ async function send(){
     if(!confirm("Send "+fmt(amount,tokenDecimals)+" "+symbol+" from "+wallet+" to "+recipient+"?\n\nCheck the contract address and network in your selected wallet before confirming.")) return;
     say("Waiting for wallet approval…");
     const result=await token.transfer(recipient,amount).send({feeLimit:100000000, shouldPollResponse:true});
-    const txid=typeof result==="string"?result:(result&&result.txid)||JSON.stringify(result);
-    say("Wallet returned a transaction result: "+txid+"\nCheck the transaction on TRONSCAN and reload the balance after it is confirmed.");
+    const txid=typeof result==="string"?result:(result&&result.txid);
+    if(!txid) throw new Error("Wallet returned no transaction ID. Check wallet activity before retrying to avoid duplicate sends.");
+    say("Transaction submitted: "+txid+"\\nChecking chain confirmation…");
+    const confirmed=await waitForConfirmation(tw,txid);
+    if(!confirmed){ say("Transaction submitted but not yet confirmed: "+txid+"\\nDo not resubmit. Check TRONSCAN and retry the balance read later."); return; }
+    say("Transaction confirmed on TRON: "+txid+"\\nRefreshing token balance…");
     await inspect();
   }catch(e){say(e.message||String(e));}
 }
