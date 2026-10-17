@@ -1,0 +1,28 @@
+{
+  "name": "tronlink-token-studio-frontend",
+  "private": true,
+  "version": "1.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite --host 0.0.0.0",
+    "build": "tsc -b && vite build",
+    "lint": "eslint src"
+  },
+  "dependencies": {
+    "@ant-design/v5-patch-for-react-19": "1.0.3",
+    "@tronweb3/tronwallet-adapter-react-hooks": "1.1.10",
+    "@tronweb3/tronwallet-adapter-react-ui": "1.1.11",
+    "@tronweb3/tronwallet-adapters": "1.2.13",
+    "antd": "5.27.0",
+    "react": "19.1.1",
+    "react-dom": "19.1.1",
+    "tronweb": "6.0.4"
+  },
+  "devDependencies": {
+    "@types/react": "19.1.10",
+    "@types/react-dom": "19.1.7",
+    "@vitejs/plugin-react-swc": "4.0.0",
+    "typescript": "5.8.3",
+    "vite": "7.1.2"
+  }
+}
