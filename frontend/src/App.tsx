@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { App as AntApp, Button, ConfigProvider, Input, Modal, Select, Tag, theme } from 'antd';
 import { WalletProvider, useWallet } from '@tronweb3/tronwallet-adapter-react-hooks';
 import { WalletModalProvider, WalletActionButton } from '@tronweb3/tronwallet-adapter-react-ui';
@@ -44,6 +44,8 @@ function Studio() {
   const [busy, setBusy] = useState(false);
   const [txHash, setTxHash] = useState('');
   const [addOpen, setAddOpen] = useState(false);
+  const activeAddressRef = useRef<string | null>(address);
+  const activeTokenContractRef = useRef(tokenContract);
 
   const adapters = useMemo(() => [
     new TronLinkAdapter(),
@@ -80,6 +82,7 @@ function Studio() {
 
   useEffect(() => { void loadBalances(); }, [loadBalances]);
   useEffect(() => { setTxHash(''); setRecipient(''); setTokenRecipient(''); }, [address]);
+  useEffect(() => { activeAddressRef.current = address; activeTokenContractRef.current = tokenContract; }, [address, tokenContract]);
 
   const addToken = async () => {
     const value = customContract.trim();
@@ -110,6 +113,7 @@ function Studio() {
       onOk: async () => {
         setBusy(true); setTxHash('');
         try {
+          if (activeAddressRef.current !== address) throw new Error('Wallet account changed. Reconnect and review the transfer again.');
           if (sun > BigInt(Number.MAX_SAFE_INTEGER)) throw new Error('Amount exceeds the safe transaction builder range.');
           const tx = await tronWeb.transactionBuilder.sendTrx(recipient, Number(sun), address);
           const signed = await signTransaction(tx);
@@ -146,7 +150,7 @@ function Studio() {
         okText: 'Continue to wallet', onOk: () => resolve(true), onCancel: () => resolve(false),
       }));
       if (!ok) return;
-      if (currentAddress !== address || currentContract !== tokenContract) throw new Error('Wallet or token selection changed. Review the transfer again.');
+      if (activeAddressRef.current !== currentAddress || activeTokenContractRef.current !== currentContract) throw new Error('Wallet or token selection changed. Review the transfer again.');
       const signed = await signTransaction(built.transaction);
       const result = await tronWeb.trx.sendRawTransaction(signed);
       if (!result.result) throw new Error(result.message ? tronWeb.toUtf8(result.message) : 'The network rejected the transaction.');
