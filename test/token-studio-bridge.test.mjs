@@ -61,6 +61,8 @@ test("Token Studio provides a bounded local TRC-20 portfolio watchlist", () => {
   assert.match(page, /Saved for a different network endpoint/);
   assert.match(page, /tokenAddress\.toLowerCase\(\)!==\$\("contract"\)\.value\.trim\(\)\.toLowerCase\(\)/);
   assert.match(page, /Inspect the currently entered token contract before sending/);
+  assert.match(page, /Inspect the currently entered token contract before adding it to the watchlist/);
+  assert.match(page, /activeNetworkKey=\(tw && tw\.fullNode && tw\.fullNode\.host\)/);
 });
 
 test("Token Studio makes the TRON-only and local-watchlist scope explicit", () => {
