@@ -213,7 +213,7 @@ health-check
 
 MIT License Copyright (c) 2026 TronLink
 
-## Custom TRC-20 Token Studio
+## Cross-chain bridge status\n\n- Bridge architecture and launch checklist: [`docs/BRIDGE_INTEGRATION.md`](./docs/BRIDGE_INTEGRATION.md).\n- This repository does **not** currently ship a deployed or audited bridge. Cross-chain transfers remain disabled until real source/destination bridge contracts, verified token registries, security review, and end-to-end tests are completed.\n- Token Studio's current wallet transfer is a same-chain TRC-20 transfer; it does not lock, burn, mint, or bridge assets between chains.\n\n## Custom TRC-20 Token Studio
 
 - Real wallet/token interaction page: [`/token-studio`](https://tronlink-skills-api.onrender.com/token-studio)
 - Local-only demo sender/receiver simulator: [`/demo-funds`](https://tronlink-skills-api.onrender.com/demo-funds). Demo credits are browser-local and are not blockchain tokens, USDT, or exchange deposits.
