@@ -1,6 +1,7 @@
 // TronBox configuration for reproducible TRON-compatible compilation.
+// This repository uses ESM ("type": "module"), so export the configuration as ESM.
 // No private keys are stored in this file or in the repository.
-module.exports = {
+export default {
   contracts_directory: "./contracts",
   contracts_build_directory: "./build/contracts",
   migrations_directory: "./migrations",
