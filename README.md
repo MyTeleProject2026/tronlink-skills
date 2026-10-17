@@ -212,3 +212,16 @@ health-check
 ## License
 
 MIT License Copyright (c) 2026 TronLink
+
+## Custom TRC-20 Token Studio
+
+This repository also contains a sponsor-gated custom TRC-20 token workflow:
+
+- Canonical contract: [`contracts/CustomTRC20.sol`](./contracts/CustomTRC20.sol)
+- Flattened source for TRONSCAN verification: [`flattened/CustomTRC20_flat.sol`](./flattened/CustomTRC20_flat.sol)
+- Reproducible build and deployment guide: [`docs/CONTRACT_BUILD_AND_VERIFY.md`](./docs/CONTRACT_BUILD_AND_VERIFY.md)
+- Sponsor-funded Mainnet runbook: [`docs/SPONSORED_MAINNET_DEPLOYMENT.md`](./docs/SPONSORED_MAINNET_DEPLOYMENT.md)
+- Remix Solidity Unit Testing suite: [`tests/CustomTRC20_flat_test.sol`](./tests/CustomTRC20_flat_test.sol)
+- Mainnet manifest template (currently not deployed): [`deployments/mainnet.template.json`](./deployments/mainnet.template.json)
+
+The configured token is named `TRC20`, symbol `VTRC`, decimals `18`, with an initial supply of `1,000,000` whole tokens minted to the deploying wallet. The contract rejects the exact `USDT` symbol. This custom token is not official Tether USDT. No Mainnet deployment is automated by CI; deployment requires a sponsor to approve and fund it.
