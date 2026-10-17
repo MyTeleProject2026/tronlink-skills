@@ -156,6 +156,7 @@ const server = http.createServer(async (req, res) => {
       description: "Read-only TRON wallet, token, market, swap-quote, resource, and staking queries, plus a TronLink-connected token transfer page.",
       health: "/health",
       tokenStudio: "/token-studio",
+      bridgeStatus: "/bridge-status",
       demoFunds: "/demo-funds",
       commands: Object.keys(commandOptions),
       usage: { method: "POST", path: "/api/command", body: { command: "wallet-balance", args: { address: "T..." } } },
