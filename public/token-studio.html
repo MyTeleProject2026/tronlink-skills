@@ -260,8 +260,8 @@ async function waitForConfirmation(tw, txid){
 async function send(){
   try{
     const tw=await connect();
-    if(!token) await inspect();
-    if(!token) return;
+    if(!token || tokenAddress.toLowerCase()!==$("contract").value.trim().toLowerCase()) await inspect();
+    if(!token || tokenAddress.toLowerCase()!==$("contract").value.trim().toLowerCase()) throw new Error("Inspect the currently entered token contract before sending. The selected contract changed.");
     const recipient=$("recipient").value.trim();
     if(!tw.isAddress(recipient)) throw new Error("Enter a valid recipient TRON address.");
     const amount=rawAmount($("amount").value.trim(),tokenDecimals);
