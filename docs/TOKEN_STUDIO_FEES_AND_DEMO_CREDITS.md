@@ -39,3 +39,12 @@ The Demo credits page is a local simulation for UI testing. Its balance is not s
 ## Future sponsored-transfer requirements
 
 Before enabling any sponsored Mainnet flow, require a named provider or an operator-controlled resource pool, written terms, supported contract allowlists, spending limits, abuse controls, transaction simulation, on-chain confirmation checks, monitoring, and an emergency disable path. Testnet success is not proof that Mainnet fees will be covered.
+
+## Multi-token portfolio and network scope
+
+Token Studio's local watchlist supports up to 50 user-added TRC-20 contract addresses. Use Inspect token, Add inspected token, then Refresh all balances. It reads each saved token's symbol(), decimals(), and balanceOf() from the currently selected wallet provider. The list is stored in browser local storage only; it does not store wallet secrets or automatically discover every token held by an account. Saved entries are scoped to the RPC/network endpoint recorded when added to reduce accidental cross-network balance confusion.
+
+This app's transfer implementation is TRON/TRC-20 only. It cannot transfer ERC-20 assets on Ethereum, Arbitrum, BNB Chain, Solana SPL tokens, or other networks through the TRON wallet provider. Those need separate chain-specific wallet adapters, token ABIs, chain-ID checks, explorers, transaction confirmation logic, and audits. A cross-chain bridge is not the same thing as sending a token on its own network.
+
+The send action checks that the inspected contract still matches the contract field before submitting, so changing the contract field cannot silently leave the prior contract selected for sending. Users must still verify the token contract, recipient, and network in their wallet confirmation.
+
