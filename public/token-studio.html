@@ -13,9 +13,9 @@ main{width:min(960px,100%);margin:auto;padding:28px 18px 60px}.top{display:flex;
 </head>
 <body>
 <main>
-  <div class="top"><div class="brand">TRON WALLET TOOLS · TOKEN STUDIO</div><div class="actions" style="margin-top:0"><a href="/demo-funds" style="display:inline-block;padding:12px;border:1px solid var(--line);border-radius:10px;color:var(--text);text-decoration:none;background:#253552">Demo credits (simulation)</a><select id="walletChoice" aria-label="Choose wallet" style="max-width:210px;padding:12px;border:1px solid var(--line);border-radius:10px;background:#0a1120;color:var(--text);font:inherit"><option value="okx">OKX Wallet</option><option value="bitget">Bitget Wallet</option><option value="tokenpocket">TokenPocket</option></select><button id="connect" type="button">Connect wallet</button></div></div>
+  <div class="top"><div class="brand">TRON WALLET TOOLS · TOKEN STUDIO</div><div class="actions" style="margin-top:0"><a href="/demo-funds" style="display:inline-block;padding:12px;border:1px solid var(--line);border-radius:10px;color:var(--text);text-decoration:none;background:#253552">Demo credits (simulation)</a><select id="walletChoice" aria-label="Choose wallet" style="max-width:210px;padding:12px;border:1px solid var(--line);border-radius:10px;background:#0a1120;color:var(--text);font:inherit"><option value="tronlink">TronLink</option><option value="okx">OKX Wallet</option><option value="bitget">Bitget Wallet</option><option value="tokenpocket">TokenPocket</option></select><button id="connect" type="button">Connect wallet</button></div></div>
   <h1>Your TRC-20 token,<br>with wallet-approved transfers.</h1>
-  <p class="sub">Read token metadata and balances, then transfer tokens using your connected TRON wallet. Your private key stays inside the wallet. This page does not create or alter blockchain balances by itself.</p>
+  <p class="sub">Read verified TRC-20 contract metadata and balances, then request wallet-approved transfers. Cross-chain movement requires a separately audited bridge and matching contracts on both chains; this page does not bridge, mint, or alter balances by itself.</p>
   <section class="panel">
     <h2>1. Connect and inspect a deployed token</h2>
     <div class="grid">
@@ -61,7 +61,7 @@ let wallet = "";
 let token = null;
 let tokenDecimals = 0;
 let walletProvider = null;
-let observedProvider = null;
+let observedProvider = null;\nlet activeNetworkKey = "";\nconst READ_RETRIES = 3;\nconst sleep = ms => new Promise(resolve => setTimeout(resolve, ms));\nasync function readWithBackoff(operation, label){\n  let last;\n  for(let attempt=0; attempt<READ_RETRIES; attempt++){\n    try{return await operation();}\n    catch(error){\n      last=error;\n      const message=String(error && (error.message||error));\n      const retryable=/429|rate.?limit|too many requests|timeout|network|fetch failed|temporar/i.test(message) || Number(error && error.status)===429;\n      if(!retryable || attempt===READ_RETRIES-1) break;\n      await sleep(700 * (2 ** attempt) + Math.floor(Math.random()*250));\n    }\n  }\n  const message=String(last && (last.message||last));\n  if(/429|rate.?limit|too many requests/i.test(message)) throw new Error(label+" was rate-limited by the selected RPC. Retry later or configure a TronGrid API key on a trusted RPC/backend; do not expose secret API keys in public frontend code.");\n  throw new Error(label+" failed: "+message);\n}
 function say(message){ $("status").textContent = message; }
 function shortAddress(a){ return a ? a.slice(0,7)+"…"+a.slice(-5) : "Not connected"; }
 function fmt(raw, decimals){ const n=BigInt(String(raw)); const base=10n**BigInt(decimals); const whole=n/base; const fraction=(n%base).toString().padStart(decimals,"0").replace(/0+$/,""); return whole.toString()+(fraction?"."+fraction:""); }
@@ -73,15 +73,26 @@ function rawAmount(value, decimals){
   return raw.toString();
 }
 async function findWalletProvider(){
-  const choice=$("walletChoice") ? $("walletChoice").value : "okx";
+  const choice=$("walletChoice") ? $("walletChoice").value : "tronlink";
   const candidates={
-    okx:[window.okxwallet && window.okxwallet.tronLink],
+    tronlink:[window.tron,window.tronLink],
+    okx:[window.okxwallet && window.okxwallet.tronLink,window.okxwallet && window.okxwallet.tron],
     bitget:[window.bitkeep && window.bitkeep.tron,window.bitkeep && window.bitkeep.tronLink],
     tokenpocket:[window.tokenpocket && window.tokenpocket.tron]
   };
-  const provider=(candidates[choice]||[]).find(p=>p && (typeof p.request==="function" || p.tronWeb));
+  let provider=(candidates[choice]||[]).find(p=>p && (typeof p.request==="function" || p.tronWeb));
+  // TIP-6963 provider discovery: accept only the wallet explicitly selected by the user.
+  if(!provider && choice==="tronlink"){
+    provider=await new Promise(resolve=>{
+      let found=null;
+      const listener=e=>{ if(e.detail && e.detail.info && /tronlink/i.test(e.detail.info.name||"")) found=e.detail.provider; };
+      window.addEventListener("TIP6963:announceProvider",listener);
+      window.dispatchEvent(new Event("TIP6963:requestProvider"));
+      setTimeout(()=>{window.removeEventListener("TIP6963:announceProvider",listener);resolve(found);},350);
+    });
+  }
   if(provider) return walletProvider=provider;
-  throw new Error("The selected wallet's TRON provider was not detected. Open Token Studio in that wallet's supported browser or enable its TRON DApp provider. This page does not fall back to TronLink.");
+  throw new Error("The selected wallet's TRON provider was not detected. Open Token Studio in that wallet's supported browser or enable its TRON DApp provider.");
 }
 function getTronWeb(){
   const tw=walletProvider && walletProvider.tronWeb;
@@ -111,7 +122,7 @@ async function connect(){
       accounts=[provider.tronWeb.defaultAddress.base58];
     }else if(typeof provider.request==="function"){
       try{
-        const result=await provider.request({method:"tron_requestAccounts"});
+        const result=await provider.request({method:"eth_requestAccounts"});
         if(Array.isArray(result)) accounts=result;
       }catch(error){
         if(![4200,-32601].includes(Number(error && error.code))) throw error;
@@ -143,7 +154,7 @@ async function inspect(){
     const address=$("contract").value.trim();
     if(!tw.isAddress(address)) throw new Error("Enter a valid TRON contract address.");
     token=await tw.contract(ABI,address);
-    const [name,symbol,decimals,total]=await Promise.all([token.name().call(),token.symbol().call(),token.decimals().call(),token.totalSupply().call()]);
+    const [name,symbol,decimals,total]=await readWithBackoff(()=>Promise.all([token.name().call(),token.symbol().call(),token.decimals().call(),token.totalSupply().call()]),"Token metadata read");
     tokenDecimals=Number(decimals);
     if(!Number.isInteger(tokenDecimals)||tokenDecimals<0||tokenDecimals>18) throw new Error("Unsupported token decimals returned by contract.");
     $("tokenName").textContent=String(name);
@@ -152,15 +163,15 @@ async function inspect(){
     const addressToCheck=$("owner").value.trim()||wallet;
     if(addressToCheck){
       if(!tw.isAddress(addressToCheck)) throw new Error("The wallet address to inspect is invalid.");
-      const bal=await token.balanceOf(addressToCheck).call();
+      const bal=await readWithBackoff(()=>token.balanceOf(addressToCheck).call(),"Token balance read");
       $("balance").textContent=fmt(bal,tokenDecimals)+" "+String(symbol);
     }else $("balance").textContent="Connect wallet";
     $("walletLabel").textContent=shortAddress(wallet||tw.defaultAddress?.base58);
     $("network").textContent=(tw.fullNode&&tw.fullNode.host)||"Wallet network";
-    say("Token metadata loaded. Verify the contract address and network before sending.");
+    activeNetworkKey=(tw.fullNode&&tw.fullNode.host)||"unknown";\n    say("Token metadata and balance loaded from the connected wallet provider. Network endpoint: "+activeNetworkKey+". Cross-chain transfers are disabled until an audited bridge and destination contract are configured.");
   }catch(e){say(e.message||String(e));}
 }
-async function send(){
+async function waitForConfirmation(tw, txid){\n  for(let i=0;i<12;i++){\n    try{\n      if(tw.trx && typeof tw.trx.getTransactionInfo==="function"){\n        const info=await tw.trx.getTransactionInfo(txid);\n        if(info && info.id && info.blockNumber){\n          const result=info.receipt && info.receipt.result;\n          if(result && result!=="SUCCESS") throw new Error("Transaction was included but execution status is "+result+".");\n          return true;\n        }\n      }\n    }catch(error){ if(/execution status/.test(String(error.message))) throw error; }\n    await sleep(2500);\n  }\n  return false;\n}\nasync function send(){
   try{
     const tw=await connect();
     if(!token) await inspect();
