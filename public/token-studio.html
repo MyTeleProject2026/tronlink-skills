@@ -30,6 +30,11 @@ main{width:min(960px,100%);margin:auto;padding:28px 18px 60px}.top{display:flex;
       <a href="https://meson.fi/" target="_blank" rel="noopener noreferrer" style="display:inline-block;padding:12px 16px;border-radius:10px;background:var(--accent);color:#061b1a;font-weight:800;text-decoration:none">Continue on official Meson app ↗</a>
       <a href="https://docs.meson.fi/references/supported-stablecoins" target="_blank" rel="noopener noreferrer" style="display:inline-block;padding:12px 16px;border-radius:10px;background:#253552;color:var(--text);border:1px solid #3a4b6b;text-decoration:none">Meson supported assets</a>
     </div>
+    <div class="grid" style="margin-top:16px">
+      <div class="wide"><label for="mesonSwapId">Meson swap ID · read-only explorer lookup</label><input id="mesonSwapId" autocomplete="off" spellcheck="false" placeholder="0x followed by 64 hexadecimal characters"></div>
+    </div>
+    <div class="actions"><button id="trackMeson" class="secondary" type="button">Open swap record in Meson Explorer ↗</button></div>
+    <p class="foot">This lookup only opens the official Explorer page for the ID you enter. It does not independently verify or fetch settlement status.</p>
     <p class="foot">Before signing, independently confirm the origin is TRON, destination is Arbitrum, both token contract addresses match the list above, the recipient is correct, and the provider shows an acceptable quote. Never share a seed phrase or private key. A provider handoff is not proof that a transfer has started or completed.</p>
   </section>
   <section class="panel">
@@ -236,10 +241,10 @@ async function send(){
     const result=await token.transfer(recipient,amount).send({feeLimit:100000000, shouldPollResponse:true});
     const txid=typeof result==="string"?result:(result&&result.txid);
     if(!txid) throw new Error("Wallet returned no transaction ID. Check wallet activity before retrying to avoid duplicate sends.");
-    say("Transaction submitted: "+txid+"\\nChecking chain confirmation…");
+    say("Transaction submitted: "+txid+"\nChecking chain confirmation…");
     const confirmed=await waitForConfirmation(tw,txid);
-    if(!confirmed){ say("Transaction submitted but not yet confirmed: "+txid+"\\nDo not resubmit. Check TRONSCAN and retry the balance read later."); return; }
-    say("Transaction confirmed on TRON: "+txid+"\\nRefreshing token balance…");
+    if(!confirmed){ say("Transaction submitted but not yet confirmed: "+txid+"\nDo not resubmit. Check TRONSCAN and retry the balance read later."); return; }
+    say("Transaction confirmed on TRON: "+txid+"\nRefreshing token balance…");
     await inspect();
   }catch(e){say(e.message||String(e));}
 }
