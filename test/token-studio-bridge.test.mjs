@@ -25,7 +25,7 @@ test("bridge status route serves a read-only page with no-store security headers
   assert.match(server, /resolve\(root, "public\/bridge-status\.html"\)/);
   assert.match(server, /cache-control.*no-store/i);
   assert.match(server, /referrer-policy.*no-referrer/i);
-  assert.match(bridgePage, /does not independently verify/i);
+  assert.match(bridgePage, /does not query a bridge API, verify settlement, or invent a transaction status/i);
 });
 
 test("wallet transaction status strings use newline escapes rather than literal backslash-n", () => {
