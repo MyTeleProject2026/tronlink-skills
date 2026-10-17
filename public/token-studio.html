@@ -325,7 +325,7 @@ async function addInspectedToken(){
     const items=loadWatchlist();
     if(items.some(x=>x.address.toLowerCase()===address.toLowerCase())){say("This contract is already in your local watchlist.");return;}
     if(items.length>=50) throw new Error("Watchlist limit reached (50 contracts). Remove a token before adding another.");
-    items.push({address,name:$("tokenName").textContent,symbol:$("symbol").textContent.split(" / ")[0],decimals:tokenDecimals,balance:$("balance").textContent});
+    items.push({address,network:activeNetworkKey,name:$("tokenName").textContent,symbol:$("symbol").textContent.split(" / ")[0],decimals:tokenDecimals,balance:$("balance").textContent});
     saveWatchlist(items);renderWatchlist(items);
     say("Added "+$("symbol").textContent.split(" / ")[0]+" to this browser's watchlist. Verify the contract and network before sending.");
   }catch(e){say(e.message||String(e));}
@@ -337,6 +337,7 @@ async function refreshWatchlist(){
     if(!items.length){renderWatchlist(items);return;}
     for(const item of items){
       try{
+        if(item.network && item.network!==activeNetworkKey) throw new Error("Saved for a different network endpoint; switch wallet network or re-add this token here");
         if(!tw.isAddress(item.address)) throw new Error("Invalid contract address");
         const instance=await tw.contract(ABI,item.address);
         const [symbol,decimals,balance]=await readWithBackoff(()=>Promise.all([instance.symbol().call(),instance.decimals().call(),instance.balanceOf(wallet).call()]),"Watchlist balance read");
