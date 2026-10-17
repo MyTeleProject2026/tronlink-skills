@@ -43,3 +43,12 @@ test("Token Studio inline JavaScript parses without syntax errors", () => {
     assert.doesNotThrow(() => new Script(match[1], { filename: `token-studio-inline-${index}.js` }));
   }
 });
+
+test("Token Studio explains fee sponsorship honestly and links official free testnet faucets", () => {
+  assert.match(page, /id="trxBalance"/);
+  assert.match(page, /tw\.trx\.getBalance\(wallet\)/);
+  assert.match(page, /Fee assistance and free testing/);
+  assert.match(page, /developers\.tron\.network\/docs\/getting-testnet-tokens-on-tron/);
+  assert.match(page, /cannot make a Mainnet transfer fee-free by itself/i);
+  assert.match(page, /Demo credits is simulated local data|Demo credits are simulated local data|Demo credits.*simulated local data/i);
+});
