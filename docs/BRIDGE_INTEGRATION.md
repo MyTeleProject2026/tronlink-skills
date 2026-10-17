@@ -16,6 +16,28 @@ This document describes how to add a legitimate cross-chain flow for multiple in
 6. Show a source transaction as **submitted** until chain inclusion/finality is verified. Show a destination transfer as **pending** until its transaction is independently verified. Never treat a wallet popup result as final settlement.
 7. Provide a recovery path for failed or delayed messages, audited pause/emergency controls, monitoring, and a documented bridge operator / validator trust model.
 
+## Provider-specific route: TRON USDT → Arbitrum USDT (Meson handoff)
+
+The official Meson documentation lists both the native TRON USDT contract and an Arbitrum USDT token it labels **Official Bridge**. Its user guide describes swaps from Tron to other supported networks and says the destination wallet address must be entered manually for cross-network swaps. The integration in Token Studio is deliberately a **handoff to Meson's official application**, not a contract-level SDK integration and not a claim that a quote or transfer is currently available.
+
+- Provider app: https://meson.fi/
+- Official supported assets: https://docs.meson.fi/references/supported-stablecoins
+- Official swap guide: https://docs.meson.fi/guides/meson
+- Official security precautions: https://docs.meson.fi/protocol/security
+- Source: TRON Mainnet native USDT, 6 decimals, `TR7NHqjeKQxGTCi8q8ZY4pL8otSzgjLj6t`.
+- Destination: Arbitrum One USDT listed by Meson as an official-bridge representation, 6 decimals, `0xFd086bC7CD5C481DCC9C85ebE478A1C0b69FCbb9`.
+
+These addresses identify the assets described in the provider's documentation; the app must still show current provider availability and the user's actual quote before a transfer. Do not treat token symbols alone as proof of equivalence or backing. Check both addresses against their respective explorers before signing.
+
+### What this repository does and does not do
+
+- Token Studio now links to the official Meson app and displays the source/destination contract addresses and explorer verification links.
+- Users complete wallet connection, route selection, quote review, and signing on the provider's official site. The app does not request seed phrases/private keys.
+- This is a provider handoff only. It does not embed Meson's signing workflow, call Meson contracts directly, monitor a Meson swap ID, or report settlement.
+- The in-app bridge status therefore remains **disabled**. Never show a bridge transaction as submitted/confirmed in Token Studio unless a future integration independently verifies the provider transaction and destination settlement.
+- Meson's supported-token documentation warns that supported assets can change; route/quote availability must be checked live in the provider app immediately before signing.
+- Do not invent an ABI, bridge contract address, API endpoint, quote, transaction ID, or wrapped asset. If adding direct SDK/contract calls later, use Meson's current official SDK and verified deployment registry, pin dependency versions, and add testnet/integration tests before enabling it.
+
 ## Multi-token support
 
 - Use an explicit registry keyed by `(chainId, tokenContract)`, not by symbol or token name.
