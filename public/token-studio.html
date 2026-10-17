@@ -50,8 +50,19 @@ main{width:min(960px,100%);margin:auto;padding:28px 18px 60px}.top{display:flex;
       <div class="stat"><small>Total supply</small><strong id="supply">—</strong></div>
       <div class="stat"><small>Connected wallet</small><strong id="walletLabel">Not connected</strong></div>
       <div class="stat"><small>Wallet token balance</small><strong id="balance">—</strong></div>
+      <div class="stat"><small>Native TRX balance · may be used for fees</small><strong id="trxBalance">—</strong></div>
       <div class="stat"><small>Network</small><strong id="network">—</strong></div>
     </div>
+  </section>
+  <section class="panel">
+    <h2>Fee assistance and free testing</h2>
+    <p class="sub">Token Studio supports arbitrary TRC-20 contracts on the connected TRON network when the contract implements the expected interface. It cannot make a Mainnet transfer fee-free by itself: the transaction needs sufficient Bandwidth/Energy or TRX, unless a legitimate sponsor explicitly funds or delegates resources for that transaction.</p>
+    <div class="actions">
+      <a href="https://developers.tron.network/docs/getting-testnet-tokens-on-tron" target="_blank" rel="noopener noreferrer" style="display:inline-block;padding:12px 16px;border-radius:10px;background:#253552;color:var(--text);border:1px solid #3a4b6b;text-decoration:none">Official free testnet faucets ↗</a>
+      <a href="https://developers.tron.network/docs/bandwidth-and-energy" target="_blank" rel="noopener noreferrer" style="display:inline-block;padding:12px 16px;border-radius:10px;background:#253552;color:var(--text);border:1px solid #3a4b6b;text-decoration:none">TRON fees and resources ↗</a>
+    </div>
+    <p class="foot">For no-cost development, switch your wallet to Shasta or Nile and use test tokens from the official faucet. Testnet tokens have no real-world value. Do not trust a site claiming to give unlimited real Mainnet USDT or free transfers without explaining who pays the network resources.</p>
+    <p class="foot">A token shown in Demo credits is simulated local data, not a blockchain asset. It cannot be transferred, redeemed, deposited, or withdrawn. The page does not fabricate transaction IDs or claim demo credits are real funds.</p>
   </section>
   <section class="panel">
     <h2>2. Send your token</h2>
@@ -208,6 +219,18 @@ async function inspect(){
     $("walletLabel").textContent=shortAddress(wallet||tw.defaultAddress?.base58);
     $("network").textContent=(tw.fullNode&&tw.fullNode.host)||"Wallet network";
     activeNetworkKey=(tw.fullNode&&tw.fullNode.host)||"unknown";
+    try {
+      const nativeBalance = await readWithBackoff(() => tw.trx.getBalance(wallet), "Native TRX balance read");
+      $("trxBalance").textContent = (Number(nativeBalance) / 1_000_000).toLocaleString(undefined, {maximumFractionDigits: 6}) + " TRX";
+    } catch (_) {
+      $("trxBalance").textContent = "Unavailable";
+    }
+    try {
+      const nativeBalance = await readWithBackoff(() => tw.trx.getBalance(wallet), "Native TRX balance read");
+      $("trxBalance").textContent = (Number(nativeBalance) / 1_000_000).toLocaleString(undefined, {maximumFractionDigits: 6}) + " TRX";
+    } catch (_) {
+      $("trxBalance").textContent = "Unavailable";
+    }
     say("Token metadata and balance loaded from the connected wallet provider. Network endpoint: "+activeNetworkKey+". Cross-chain transfers are disabled until an audited bridge and destination contract are configured.");
   }catch(e){say(e.message||String(e));}
 }
