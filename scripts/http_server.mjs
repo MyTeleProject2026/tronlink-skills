@@ -120,6 +120,19 @@ const server = http.createServer(async (req, res) => {
       return send(res, 500, { error: "Token Studio page is unavailable" });
     }
   }
+  if (req.method === "GET" && url.pathname === "/demo-funds") {
+    try {
+      const page = await readFile(resolve(root, "public/demo-funds.html"), "utf8");
+      res.writeHead(200, {
+        "Content-Type": "text/html; charset=utf-8",
+        "Cache-Control": "no-store",
+        "X-Content-Type-Options": "nosniff"
+      });
+      return res.end(page);
+    } catch {
+      return send(res, 500, { error: "Demo credits page is unavailable" });
+    }
+  }
   if (req.method === "GET" && (url.pathname === "/health" || url.pathname === "/healthz")) {
     return send(res, 200, { status: "ok", service: "tronlink-skills-api", network: process.env.TRON_NETWORK || "mainnet", node: process.version });
   }
@@ -128,14 +141,14 @@ const server = http.createServer(async (req, res) => {
       name: "TronLink Skills API",
       description: "Read-only TRON wallet, token, market, swap-quote, resource, and staking queries, plus a TronLink-connected token transfer page.",
       health: "/health",
-      tokenStudio: "/token-studio",
+      tokenStudio: "/token-studio",\n      demoFunds: "/demo-funds",
       commands: Object.keys(commandOptions),
       usage: { method: "POST", path: "/api/command", body: { command: "wallet-balance", args: { address: "T..." } } },
       note: "The JSON API is read-only. Token Studio requests transfers through TronLink, where the user reviews and signs locally. Never submit private keys or seed phrases."
     });
   }
   if (req.method !== "POST" || url.pathname !== "/api/command") {
-    return send(res, 404, { error: "Not found", endpoints: ["GET /", "GET /health", "GET /token-studio", "POST /api/command"] });
+    return send(res, 404, { error: "Not found", endpoints: ["GET /", "GET /health", "GET /token-studio", "GET /demo-funds", "POST /api/command"] });
   }
   if (rateLimited(req)) return send(res, 429, { error: "Rate limit exceeded. Try again in one minute." });
   try {
