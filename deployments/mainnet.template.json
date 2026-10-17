@@ -1,0 +1,30 @@
+{
+  "status": "not_deployed",
+  "network": "TRON Mainnet",
+  "contractName": "CustomTRC20",
+  "token": {
+    "name": "TRC20",
+    "symbol": "VTRC",
+    "decimals": 18,
+    "initialWholeTokenSupply": "1000000",
+    "initialSupplyBaseUnits": "1000000000000000000000000",
+    "initialRecipient": "deployer"
+  },
+  "source": {
+    "gitCommit": null,
+    "sourceSha256": null,
+    "flattenedSourceSha256": null,
+    "solidityCompiler": "0.8.20",
+    "license": "MIT",
+    "optimizerEnabled": true,
+    "optimizerRuns": 200
+  },
+  "deployment": {
+    "sponsorPublicAddress": null,
+    "transactionId": null,
+    "contractAddress": null,
+    "confirmedAt": null,
+    "tronscanVerificationUrl": null
+  },
+  "notes": "Template only. No contract has been deployed. Fill fields only after an authorized, sponsor-funded Mainnet deployment is confirmed on-chain."
+}
