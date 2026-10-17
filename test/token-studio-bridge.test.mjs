@@ -1,6 +1,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import { readFile } from "node:fs/promises";
+import { Script } from "node:vm";
 
 const page = await readFile(new URL("../public/token-studio.html", import.meta.url), "utf8");
 const server = await readFile(new URL("../scripts/http_server.mjs", import.meta.url), "utf8");
@@ -31,4 +32,14 @@ test("wallet transaction status strings use newline escapes rather than literal 
   assert.ok(page.includes('say("Transaction submitted: "+txid+"\\nChecking chain confirmation…");'));
   assert.ok(page.includes('say("Transaction confirmed on TRON: "+txid+"\\nRefreshing token balance…");'));
   assert.equal(page.includes('txid+"\\\\nChecking chain confirmation'), false);
+});
+
+
+test("Token Studio inline JavaScript parses without syntax errors", () => {
+  const scripts = [...page.matchAll(/<script\\b[^>]*>([\\s\\S]*?)<\\/script>/gi)];
+  assert.ok(scripts.length > 0, "Expected at least one inline script block");
+  for (const [index, match] of scripts.entries()) {
+    if (!match[1].trim()) continue;
+    assert.doesNotThrow(() => new Script(match[1], { filename: `token-studio-inline-${index}.js` }));
+  }
 });
