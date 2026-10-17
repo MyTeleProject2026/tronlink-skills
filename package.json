@@ -23,13 +23,30 @@
     "mcp": "node scripts/mcp_server.mjs",
     "test": "node --test test/",
     "test:smoke": "node scripts/tron_api.mjs validate-address --address TR7NHqjeKQxGTCi8q8ZY4pL8otSzgjLj6t",
-    "postinstall": "echo '\\n  ✅ tronlink-skills installed!\\n  Skills: tron-wallet, tron-token, tron-market, tron-swap, tron-resource, tron-staking\\n  Run: npx tron-api --help\\n'"
+    "postinstall": "echo '\\n  ✅ tronlink-skills installed!\\n  Skills: tron-wallet, tron-token, tron-market, tron-swap, tron-resource, tron-staking\\n  Run: npx tron-api --help\\n'",
+    "contracts:compile": "tronbox compile --all",
+    "contracts:flatten": "node scripts/flatten-contract.mjs",
+    "contracts:check": "node --test test/"
   },
   "dependencies": {},
   "keywords": [
-    "tron", "tronlink", "trx", "trc20", "defi", "wallet",
-    "staking", "energy", "bandwidth", "sunswap", "ai-agent",
-    "skills", "claude-code", "cursor", "codex", "opencode", "web3"
+    "tron",
+    "tronlink",
+    "trx",
+    "trc20",
+    "defi",
+    "wallet",
+    "staking",
+    "energy",
+    "bandwidth",
+    "sunswap",
+    "ai-agent",
+    "skills",
+    "claude-code",
+    "cursor",
+    "codex",
+    "opencode",
+    "web3"
   ],
   "license": "MIT",
   "repository": {
@@ -38,5 +55,8 @@
   },
   "engines": {
     "node": ">=18.0.0"
+  },
+  "devDependencies": {
+    "tronbox": "4.11.0"
   }
 }
