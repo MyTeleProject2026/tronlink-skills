@@ -110,6 +110,7 @@ function Studio() {
       onOk: async () => {
         setBusy(true); setTxHash('');
         try {
+          if (sun > BigInt(Number.MAX_SAFE_INTEGER)) throw new Error('Amount exceeds the safe transaction builder range.');
           const tx = await tronWeb.transactionBuilder.sendTrx(recipient, Number(sun), address);
           const signed = await signTransaction(tx);
           const result = await tronWeb.trx.sendRawTransaction(signed);
