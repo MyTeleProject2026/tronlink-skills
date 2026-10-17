@@ -217,6 +217,7 @@ MIT License Copyright (c) 2026 TronLink
 
 - Provider handoff: Token Studio links to Meson's official app for the documented TRON USDT → Arbitrum USDT route. See [bridge integration notes](./docs/BRIDGE_INTEGRATION.md).
 - This is a **provider handoff**, not an embedded bridge. Token Studio does not execute, monitor, or confirm cross-chain swaps. In-app bridge execution remains disabled.
+- Read-only status handoff: [`/bridge-status`](https://tronlink-skills-api.onrender.com/bridge-status) validates the swap-ID format and opens the corresponding official Meson Explorer record; it does not independently verify settlement.
 - Asset addresses shown in Token Studio come from Meson's published supported-asset list and have explorer links. Live quote/route availability must be checked in the official provider app.
 - Same-chain wallet transfers are separate from cross-chain routing. Demo credits remain local-only and are not real crypto.
 
