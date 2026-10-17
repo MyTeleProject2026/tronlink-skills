@@ -167,6 +167,20 @@ const server = http.createServer(async (req, res) => {
       return send(res, 500, { error: "Bridge status helper is unavailable" });
     }
   }
+  if (req.method === "GET" && url.pathname === "/multichain-demo") {
+    try {
+      const page = await readFile(resolve(root, "public/multichain-demo.html"), "utf8");
+      res.writeHead(200, {
+        "Content-Type": "text/html; charset=utf-8",
+        "Cache-Control": "no-store",
+        "X-Content-Type-Options": "nosniff",
+        "Referrer-Policy": "no-referrer"
+      });
+      return res.end(page);
+    } catch {
+      return send(res, 500, { error: "Multi-network demo ledger is unavailable" });
+    }
+  }
   if (req.method === "GET" && url.pathname === "/demo-funds") {
     try {
       const page = await readFile(resolve(root, "public/demo-funds.html"), "utf8");
@@ -191,13 +205,14 @@ const server = http.createServer(async (req, res) => {
       tokenStudio: "/token-studio",
       bridgeStatus: "/bridge-status",
       demoFunds: "/demo-funds",
+      multiNetworkDemo: "/multichain-demo",
       commands: Object.keys(commandOptions),
       usage: { method: "POST", path: "/api/command", body: { command: "wallet-balance", args: { address: "T..." } } },
       note: "The JSON API is read-only. Token Studio requests transfers through TronLink, where the user reviews and signs locally. Never submit private keys or seed phrases."
     });
   }
   if (req.method !== "POST" || url.pathname !== "/api/command") {
-    return send(res, 404, { error: "Not found", endpoints: ["GET /", "GET /health", "GET /token-studio", "GET /token-studio-legacy", "GET /bridge-status", "GET /demo-funds", "POST /api/command"] });
+    return send(res, 404, { error: "Not found", endpoints: ["GET /", "GET /health", "GET /token-studio", "GET /token-studio-legacy", "GET /bridge-status", "GET /demo-funds", "GET /multichain-demo", "POST /api/command"] });
   }
   if (rateLimited(req)) return send(res, 429, { error: "Rate limit exceeded. Try again in one minute." });
   try {
