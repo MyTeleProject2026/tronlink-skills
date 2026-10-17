@@ -243,7 +243,7 @@ async function send(){
     await inspect();
   }catch(e){say(e.message||String(e));}
 }
-$("trackMeson").addEventListener("click",()=>{
+if($("trackMeson")) $("trackMeson").addEventListener("click",()=>{
   const raw=$("mesonSwapId").value.trim();
   const id=raw.replace(/^0x/i,"");
   if(!/^[0-9a-fA-F]{64}$/.test(id)){say("Enter a valid 32-byte Meson swap ID from the official provider.");return;}
