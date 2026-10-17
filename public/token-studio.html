@@ -144,10 +144,9 @@ async function connect(){
         const result=await provider.request({method:"eth_requestAccounts"});
         if(Array.isArray(result)) accounts=result;
       }catch(error){
+        if(Number(error && error.code)===4001) throw new Error("Wallet connection was rejected. Tap Connect wallet and approve the request.");
         if(![4200,-32601].includes(Number(error && error.code))) throw error;
-        const legacy=await provider.request({method:"eth_requestAccounts"});
-        if(Array.isArray(legacy)) accounts=legacy;
-        else if(legacy && Number(legacy.code)===4001) throw new Error("Wallet connection was rejected. Tap Connect wallet and approve the request.");
+        throw new Error("This wallet does not support eth_requestAccounts. Use its documented TRON DApp provider or a compatible wallet adapter.");
       }
     }
     let tw;
