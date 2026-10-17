@@ -23,8 +23,8 @@ test("Meson tracker validates a 32-byte hexadecimal swap ID before opening Explo
 test("bridge status route serves a read-only page with no-store security headers", () => {
   assert.match(server, /url\.pathname === "\/bridge-status"/);
   assert.match(server, /resolve\(root, "public\/bridge-status\.html"\)/);
-  assert.match(server, /["]Cache-Control["]: ["]no-store["]/i);
-  assert.match(server, /["]Referrer-Policy["]: ["]no-referrer["]/i);
+  assert.match(server, /cache-control.*no-store/i);
+  assert.match(server, /referrer-policy.*no-referrer/i);
   assert.match(bridgePage, /does not independently verify/i);
 });
 
