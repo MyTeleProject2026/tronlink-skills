@@ -1,0 +1,46 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#0b1020">
+<meta name="referrer" content="no-referrer">
+<title>Meson Swap Status · Vexa Tools</title>
+<style>
+:root{color-scheme:dark;--bg:#0b1020;--panel:#121a2d;--line:#263653;--text:#eef4ff;--muted:#9eacc6;--accent:#65e0c1;--warn:#f5c66d}
+*{box-sizing:border-box}body{margin:0;background:radial-gradient(900px 600px at 10% -10%,#20375a 0%,transparent 60%),var(--bg);color:var(--text);font:15px/1.55 system-ui,-apple-system,Segoe UI,sans-serif}main{width:min(760px,100%);margin:auto;padding:30px 16px 56px}.eyebrow{font-size:12px;letter-spacing:.15em;color:var(--accent);font-weight:800}h1{font-size:clamp(28px,6vw,42px);line-height:1.1;margin:12px 0}p{color:var(--muted)}.panel{margin-top:20px;background:rgba(18,26,45,.95);border:1px solid var(--line);border-radius:18px;padding:20px}.warning{border-left:3px solid var(--warn);padding:12px;background:#2b2417;color:#f3dfb1;border-radius:6px}.field{display:block;margin:14px 0 6px;color:var(--muted);font-size:13px}input{width:100%;padding:13px;border:1px solid var(--line);border-radius:10px;background:#0a1120;color:var(--text);font:inherit}button,a.button{display:inline-block;border:0;border-radius:10px;padding:12px 16px;background:var(--accent);color:#061b1a;font-weight:800;font:inherit;text-decoration:none;cursor:pointer}button:disabled{opacity:.5}.actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:14px}.status{white-space:pre-wrap;overflow-wrap:anywhere;padding:12px;background:#0a1120;border:1px solid var(--line);border-radius:10px;margin-top:14px;color:var(--muted)}.small{font-size:12px}.links a{color:var(--accent)}@media(max-width:600px){.panel{padding:15px}main{padding:22px 12px 40px}}
+</style>
+</head>
+<body><main>
+<div class="eyebrow">CROSS-CHAIN · READ-ONLY STATUS HANDOFF</div>
+<h1>Track a Meson swap</h1>
+<p>Open a swap record in the official Meson Explorer using its swap ID. This page does not query a bridge API, verify settlement, or invent a transaction status.</p>
+<section class="panel">
+<div class="warning"><strong>Important:</strong> Seeing a swap record is not, by itself, proof that destination funds arrived. Confirm the destination transaction and token balance using the destination chain's official explorer and your own wallet.</div>
+<label class="field" for="swapId">Meson swap ID</label>
+<input id="swapId" autocomplete="off" spellcheck="false" placeholder="64 hexadecimal characters, optional 0x prefix" aria-describedby="help">
+<p id="help" class="small">Paste the swap ID shown by Meson. It must be a 32-byte hexadecimal value.</p>
+<div class="actions"><button id="open" type="button">Open official Meson Explorer ↗</button><a class="button" href="https://explorer.meson.fi/" target="_blank" rel="noopener noreferrer">Open Explorer home</a></div>
+<div id="status" class="status" role="status" aria-live="polite">No swap ID submitted. Nothing has been queried or verified.</div>
+</section>
+<section class="panel links">
+<strong>TRON USDT → Arbitrum USDT</strong>
+<p>For the supported-asset list and current route availability, use Meson's official documentation and app.</p>
+<ul><li><a href="https://meson.fi/" target="_blank" rel="noopener noreferrer">Official Meson app</a></li><li><a href="https://docs.meson.fi/references/supported-stablecoins" target="_blank" rel="noopener noreferrer">Official supported stablecoins</a></li><li><a href="https://tronscan.org/#/token20/TR7NHqjeKQxGTCi8q8ZY4pL8otSzgjLj6t" target="_blank" rel="noopener noreferrer">TRON USDT on TRONSCAN</a></li><li><a href="https://arbiscan.io/token/0xfd086bc7cd5c481dcc9c85ebe478a1c0b69fcbb9" target="_blank" rel="noopener noreferrer">Arbitrum USDT on Arbiscan</a></li></ul>
+<p class="small">Never enter your seed phrase or private key. Never resubmit a transaction just because status updates are delayed.</p>
+</section>
+</main>
+<script>
+const input=document.getElementById("swapId");
+const status=document.getElementById("status");
+document.getElementById("open").addEventListener("click",()=>{
+  const id=input.value.trim().replace(/^0x/i,"");
+  if(!/^[0-9a-fA-F]{64}$/.test(id)){
+    status.textContent="Invalid swap ID. Enter 64 hexadecimal characters, optionally prefixed with 0x.";
+    return;
+  }
+  status.textContent="Opening the official Meson Explorer record. This page has not independently verified the swap status or destination settlement.";
+  window.open("https://explorer.meson.fi/swap/0x"+id,"_blank","noopener,noreferrer");
+});
+</script>
+</body></html>
