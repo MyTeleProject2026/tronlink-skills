@@ -26,7 +26,9 @@
     "postinstall": "echo '\\n  ✅ tronlink-skills installed!\\n  Skills: tron-wallet, tron-token, tron-market, tron-swap, tron-resource, tron-staking\\n  Run: npx tron-api --help\\n'",
     "contracts:compile": "npx --yes tronbox@4.11.0 compile --all",
     "contracts:flatten": "node scripts/flatten-contract.mjs",
-    "contracts:check": "node --test test/"
+    "contracts:check": "node --test test/",
+    "build": "npm install --prefix frontend --no-audit --no-fund && npm run build --prefix frontend",
+    "frontend:dev": "npm run dev --prefix frontend"
   },
   "dependencies": {},
   "keywords": [
