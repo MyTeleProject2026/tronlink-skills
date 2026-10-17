@@ -1,0 +1,58 @@
+name: TRC-20 contract build and checks
+
+on:
+  push:
+    paths:
+      - "contracts/**"
+      - "flattened/**"
+      - "migrations/**"
+      - "scripts/flatten-contract.mjs"
+      - "test/**"
+      - "tests/**"
+      - "tronbox-config.js"
+      - "package.json"
+      - ".github/workflows/trc20-contract-ci.yml"
+  pull_request:
+    paths:
+      - "contracts/**"
+      - "flattened/**"
+      - "migrations/**"
+      - "scripts/flatten-contract.mjs"
+      - "test/**"
+      - "tests/**"
+      - "tronbox-config.js"
+      - "package.json"
+      - ".github/workflows/trc20-contract-ci.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  compile-and-check:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout source
+        uses: actions/checkout@v4
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: npm
+      - name: Install pinned dependencies
+        run: npm install --no-audit --no-fund
+      - name: Generate flattened verification source
+        run: npm run contracts:flatten
+      - name: Run source safety checks
+        run: npm run contracts:check
+      - name: Compile with TronBox
+        run: npm run contracts:compile
+      - name: Upload build artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: trc20-build-artifacts
+          path: |
+            build/contracts/CustomTRC20.json
+            flattened/CustomTRC20_flat.sol
+          if-no-files-found: error
+          retention-days: 14
