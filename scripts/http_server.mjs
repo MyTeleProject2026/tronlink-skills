@@ -141,7 +141,8 @@ const server = http.createServer(async (req, res) => {
       name: "TronLink Skills API",
       description: "Read-only TRON wallet, token, market, swap-quote, resource, and staking queries, plus a TronLink-connected token transfer page.",
       health: "/health",
-      tokenStudio: "/token-studio",\n      demoFunds: "/demo-funds",
+      tokenStudio: "/token-studio",
+      demoFunds: "/demo-funds",
       commands: Object.keys(commandOptions),
       usage: { method: "POST", path: "/api/command", body: { command: "wallet-balance", args: { address: "T..." } } },
       note: "The JSON API is read-only. Token Studio requests transfers through TronLink, where the user reviews and signs locally. Never submit private keys or seed phrases."
