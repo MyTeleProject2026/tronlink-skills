@@ -29,6 +29,10 @@ The official Meson documentation lists both the native TRON USDT contract and an
 
 These addresses identify the assets described in the provider's documentation; the app must still show current provider availability and the user's actual quote before a transfer. Do not treat token symbols alone as proof of equivalence or backing. Check both addresses against their respective explorers before signing.
 
+### Read-only swap status helper
+
+The public `/bridge-status` page accepts a Meson swap ID in 32-byte hexadecimal form and opens the matching official Meson Explorer record. Token Studio has the same convenience action. This is an explorer handoff, not a direct status API integration: neither page independently verifies the source transaction, destination transaction, or settlement. Users should follow the transaction IDs shown by the provider and verify them in the official explorers. No swap status is stored or synthesized by this repository.
+
 ### What this repository does and does not do
 
 - Token Studio now links to the official Meson app and displays the source/destination contract addresses and explorer verification links.
