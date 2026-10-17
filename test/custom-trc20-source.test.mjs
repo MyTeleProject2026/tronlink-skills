@@ -6,10 +6,10 @@ const source = await readFile(new URL("../contracts/CustomTRC20.sol", import.met
 
 test("contract exposes expected TRC-20 metadata and transfer methods", () => {
   for (const signature of [
-    "function name()",
-    "function symbol()",
-    "function decimals()",
-    "function totalSupply()",
+    "string public name;",
+    "string public symbol;",
+    "uint8 public immutable decimals;",
+    "uint256 public totalSupply;",
     "mapping(address => uint256) public balanceOf",
     "mapping(address => mapping(address => uint256)) public allowance",
     "function transfer(address to, uint256 value)",
