@@ -225,12 +225,6 @@ async function inspect(){
     } catch (_) {
       $("trxBalance").textContent = "Unavailable";
     }
-    try {
-      const nativeBalance = await readWithBackoff(() => tw.trx.getBalance(wallet), "Native TRX balance read");
-      $("trxBalance").textContent = (Number(nativeBalance) / 1_000_000).toLocaleString(undefined, {maximumFractionDigits: 6}) + " TRX";
-    } catch (_) {
-      $("trxBalance").textContent = "Unavailable";
-    }
     say("Token metadata and balance loaded from the connected wallet provider. Network endpoint: "+activeNetworkKey+". Cross-chain transfers are disabled until an audited bridge and destination contract are configured.");
   }catch(e){say(e.message||String(e));}
 }
