@@ -22,7 +22,7 @@ npm run contracts:check
 npm run contracts:compile
 ```
 
-TronBox is pinned to version 4.11.0 in `package.json`; the compiler is pinned to Solidity 0.8.20 with optimization enabled and 200 runs in `tronbox-config.js`. Keep these settings identical when compiling the source intended for deployment and when submitting verification.
+The build script invokes TronBox 4.11.0 with `npx` so the application package lockfile remains unchanged; the compiler is pinned to Solidity 0.8.20 with optimization enabled and 200 runs in `tronbox-config.js`. Keep these settings identical when compiling the source intended for deployment and when submitting verification.
 
 The Node.js tests validate key source safeguards and supply arithmetic. The Remix test suite at `tests/CustomTRC20_flat_test.sol` checks contract behavior in Remix's Solidity Unit Testing plugin. Do not describe source-pattern tests as a substitute for runtime tests or an independent audit.
 
