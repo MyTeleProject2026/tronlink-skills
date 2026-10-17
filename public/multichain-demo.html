@@ -1,0 +1,52 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="theme-color" content="#08111f">
+<title>Multi-network Demo Ledger | TronLink Skills</title>
+<style>
+:root{color-scheme:dark;--bg:#08111f;--panel:#101d30;--line:#2a3c58;--text:#eef5ff;--muted:#9cacc5;--mint:#65e0c1;--warn:#f6d18a}
+*{box-sizing:border-box}body{margin:0;background:radial-gradient(900px 500px at 0 -10%,#1e3a5d,transparent 65%),var(--bg);color:var(--text);font:15px/1.55 system-ui,sans-serif}main{max-width:1000px;margin:auto;padding:28px 16px 60px}.brand{font-size:12px;letter-spacing:.15em;color:var(--mint);font-weight:800}h1{font-size:clamp(28px,5vw,44px);line-height:1.1;margin:12px 0}h2{font-size:19px;margin:0 0 14px}.muted{color:var(--muted)}.banner{margin:18px 0;padding:15px;border:1px solid #846832;background:#2b2417;color:#ffebbd;border-radius:14px}.grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}.panel{background:#101d30eF;border:1px solid var(--line);border-radius:18px;padding:20px;margin-top:16px}.wide{grid-column:1/-1}label{display:block;color:var(--muted);font-size:13px;margin-bottom:6px}input,select{width:100%;padding:12px;border-radius:10px;border:1px solid var(--line);background:#081321;color:var(--text);font:inherit}button,a.btn{border:0;border-radius:10px;padding:12px 15px;background:var(--mint);color:#061a18;font-weight:800;text-decoration:none;cursor:pointer}.secondary{background:#263854;color:var(--text);border:1px solid #3b5071}.actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:14px}.stats{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}.stat{padding:14px;border:1px solid var(--line);border-radius:12px;overflow-wrap:anywhere}.stat small{display:block;color:var(--muted)}.stat strong{display:block;font-size:20px;margin-top:5px}.status{padding:12px;border:1px solid var(--line);border-radius:10px;margin-top:14px;white-space:pre-wrap;overflow-wrap:anywhere}.row{display:grid;grid-template-columns:1fr auto;gap:12px;align-items:center;border-bottom:1px solid var(--line);padding:12px 0}.row:last-child{border:0}.row small{display:block;color:var(--muted)}.pill{display:inline-block;border:1px solid #81662e;color:var(--warn);padding:3px 8px;border-radius:99px;font-size:11px;font-weight:800;letter-spacing:.06em}.network-list{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}.network{border:1px solid var(--line);padding:12px;border-radius:12px;background:#0a1627}.network b{display:block}.network small{color:var(--muted)}@media(max-width:620px){.grid,.stats,.network-list{grid-template-columns:1fr}.wide{grid-column:auto}.panel{padding:15px}}
+</style>
+</head>
+<body><main>
+<div class="brand">VEXA · TRONLINK SKILLS</div><h1>Multi-network demo ledger</h1>
+<p class="muted">A sandbox for designing deposit, send, receive, and exchange UI flows across multiple chains.</p>
+<div class="banner"><strong>DEMO ONLY · NOT REAL USDT OR CRYPTO</strong><br>Every balance and transfer on this page is simulated in this browser. It does not mint tokens, call a blockchain, create a transaction hash, credit an exchange, or transfer value to a real wallet. Demo credits cannot be withdrawn or redeemed.</div>
+<section class="panel"><h2>Supported demo network labels</h2><div class="network-list">
+<div class="network"><b>TRON</b><small>TRC-20 · demo USDT label</small></div><div class="network"><b>Ethereum</b><small>ERC-20 · demo USDT label</small></div><div class="network"><b>BNB Smart Chain</b><small>BEP-20 · demo USDT label</small></div><div class="network"><b>Polygon</b><small>PoS · demo USDT label</small></div><div class="network"><b>Arbitrum One</b><small>ERC-20 · demo USDT label</small></div><div class="network"><b>Solana</b><small>SPL · demo USDT label</small></div>
+</div></section>
+<section class="panel"><h2>1. Select a demo account</h2><div class="grid">
+<div><label for="network">Demo network</label><select id="network"><option>TRON</option><option>Ethereum</option><option>BNB Smart Chain</option><option>Polygon</option><option>Arbitrum One</option><option>Solana</option></select></div>
+<div><label for="account">Account label / wallet address</label><input id="account" autocomplete="off" placeholder="Enter an account label or address"></div>
+<div><label for="credit">Add demo USDT credits</label><input id="credit" inputmode="decimal" placeholder="e.g. 1000"></div>
+<div style="display:flex;align-items:end"><button id="add">Add demo credits</button></div></div>
+<div class="stats" style="margin-top:14px"><div class="stat"><small>Selected network</small><strong id="selectedNetwork">TRON</strong></div><div class="stat"><small>Account demo balance</small><strong id="balance">0 DEMO-USDT</strong></div><div class="stat"><small>Ledger type</small><strong>Local only</strong></div></div>
+<div class="actions"><button id="load" class="secondary">Load account</button><button id="reset" class="secondary">Clear all demo data</button></div><div id="status" class="status" role="status" aria-live="polite">Sandbox ready. No wallet connection or blockchain request is made.</div></section>
+<section class="panel"><h2>2. Simulate a send / receive</h2><div class="grid">
+<div><label for="receiverNetwork">Receiver network</label><select id="receiverNetwork"><option>TRON</option><option>Ethereum</option><option>BNB Smart Chain</option><option>Polygon</option><option>Arbitrum One</option><option>Solana</option></select></div>
+<div><label for="receiver">Receiver account label / address</label><input id="receiver" autocomplete="off" placeholder="Receiver account"></div>
+<div><label for="sendAmount">Amount of demo credits</label><input id="sendAmount" inputmode="decimal" placeholder="e.g. 25"></div>
+<div style="display:flex;align-items:end"><button id="send">Simulate transfer</button></div></div>
+<p class="muted">Same-network demo transfers move credits between local labels. Cross-network demo transfers are recorded as simulated only and do not prove or execute a bridge settlement.</p></section>
+<section class="panel"><h2>3. Local activity history</h2><div id="history" class="muted">No activity yet.</div><div class="actions"><a class="btn" href="/token-studio">Open real wallet tools</a><a class="btn secondary" href="/bridge-status">Bridge integration status</a></div>
+<p class="muted">For real assets, use the official token contract on its native network and verify deposits with the chain explorer and exchange deposit rules. Token names and symbols alone do not prove authenticity.</p></section>
+</main>
+<script>
+const $=id=>document.getElementById(id), KEY='tronlinkSkillsMultiNetworkDemoV1';
+const NETWORKS=['TRON','Ethereum','BNB Smart Chain','Polygon','Arbitrum One','Solana'];
+let ledger=load();
+function load(){try{const v=JSON.parse(localStorage.getItem(KEY)||'{}');if(v&&v.balances&&Array.isArray(v.history))return v;}catch{}return {balances:{},history:[]};}
+function key(net,acct){return net+'::'+acct.trim().toLowerCase();}
+function account(){const a=$('account').value.trim();if(!a)throw Error('Enter a demo account label or address.');if(a.length>180)throw Error('Account label is too long.');return a;}
+function units(v){if(!/^\d+(\.\d{1,6})?$/.test(v.trim()))throw Error('Enter an amount with up to 6 decimal places.');const n=Math.round(Number(v)*1e6);if(!Number.isSafeInteger(n)||n<=0)throw Error('Amount must be positive and within the demo limit.');return n;}
+function fmt(n){return (n/1e6).toLocaleString(undefined,{maximumFractionDigits:6});}
+function record(text){ledger.history.unshift({time:new Date().toLocaleString(),text});ledger.history=ledger.history.slice(0,50);}
+function save(){localStorage.setItem(KEY,JSON.stringify(ledger));render();}
+function render(){const net=$('network').value;$('selectedNetwork').textContent=net;const a=$('account').value.trim();$('balance').textContent=fmt(ledger.balances[key(net,a)]||0)+' DEMO-USDT';const h=$('history');h.replaceChildren();if(!ledger.history.length){h.textContent='No activity yet.';return;}for(const item of ledger.history){const row=document.createElement('div');row.className='row';const desc=document.createElement('span');desc.textContent=item.text;const time=document.createElement('small');time.textContent=item.time;row.append(desc,time);h.append(row);}}
+$('network').addEventListener('change',render);$('account').addEventListener('input',render);
+$('load').addEventListener('click',()=>{try{account();render();$('status').textContent='Loaded local demo account. This is not a verified wallet balance.';}catch(e){$('status').textContent=e.message;}});
+$('add').addEventListener('click',()=>{try{const a=account(),n=units($('credit').value),k=key($('network').value,a);ledger.balances[k]=(ledger.balances[k]||0)+n;record('Created '+fmt(n)+' DEMO-USDT credits for '+a+' on '+$('network').value+' (local simulation only).');save();$('status').textContent='Demo credits added locally. No token or blockchain transaction was created.';}catch(e){$('status').textContent=e.message;}});
+$('send').addEventListener('click',()=>{try{const a=account(),b=$('receiver').value.trim(),n=units($('sendAmount').value),from=$('network').value,to=$('receiverNetwork').value;if(!b||b.length>180)throw Error('Enter a receiver account label or address.');const ka=key(from,a),kb=key(to,b);if(ka===kb)throw Error('Choose a different receiver account.');if((ledger.balances[ka]||0)<n)throw Error('Insufficient demo credits on the selected sender network.');ledger.balances[ka]-=n;ledger.balances[kb]=(ledger.balances[kb]||0)+n;record('Simulated '+fmt(n)+' DEMO-USDT from '+a+' ('+from+') to '+b+' ('+to+'). Not an on-chain transfer.');save();$('status').textContent=from===to?'Demo transfer recorded locally. No transaction hash exists.':'Cross-network demo transfer recorded locally only. No bridge was called and no destination-chain funds were created.';}catch(e){$('status').textContent=e.message;}});
+$('reset').addEventListener('click',()=>{if(!confirm('Clear all simulated balances and activity from this browser?'))return;ledger={balances:{},history:[]};save();$('status').textContent='All local demo data cleared. No real crypto was affected.';});
+render();
+</script></body></html>
