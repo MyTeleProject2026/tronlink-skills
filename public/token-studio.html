@@ -61,7 +61,25 @@ let wallet = "";
 let token = null;
 let tokenDecimals = 0;
 let walletProvider = null;
-let observedProvider = null;\nlet activeNetworkKey = "";\nconst READ_RETRIES = 3;\nconst sleep = ms => new Promise(resolve => setTimeout(resolve, ms));\nasync function readWithBackoff(operation, label){\n  let last;\n  for(let attempt=0; attempt<READ_RETRIES; attempt++){\n    try{return await operation();}\n    catch(error){\n      last=error;\n      const message=String(error && (error.message||error));\n      const retryable=/429|rate.?limit|too many requests|timeout|network|fetch failed|temporar/i.test(message) || Number(error && error.status)===429;\n      if(!retryable || attempt===READ_RETRIES-1) break;\n      await sleep(700 * (2 ** attempt) + Math.floor(Math.random()*250));\n    }\n  }\n  const message=String(last && (last.message||last));\n  if(/429|rate.?limit|too many requests/i.test(message)) throw new Error(label+" was rate-limited by the selected RPC. Retry later or configure a TronGrid API key on a trusted RPC/backend; do not expose secret API keys in public frontend code.");\n  throw new Error(label+" failed: "+message);\n}
+let observedProvider = null;\nlet activeNetworkKey = "";
+const READ_RETRIES = 3;
+const sleep = ms => new Promise(resolve => setTimeout(resolve, ms));
+async function readWithBackoff(operation, label){
+  let last;
+  for(let attempt=0; attempt<READ_RETRIES; attempt++){
+    try{return await operation();}
+    catch(error){
+      last=error;
+      const message=String(error && (error.message||error));
+      const retryable=/429|rate.?limit|too many requests|timeout|network|fetch failed|temporar/i.test(message) || Number(error && error.status)===429;
+      if(!retryable || attempt===READ_RETRIES-1) break;
+      await sleep(700 * (2 ** attempt) + Math.floor(Math.random()*250));
+    }
+  }
+  const message=String(last && (last.message||last));
+  if(/429|rate.?limit|too many requests/i.test(message)) throw new Error(label+" was rate-limited by the selected RPC. Retry later or configure a TronGrid API key on a trusted RPC/backend; do not expose secret API keys in public frontend code.");
+  throw new Error(label+" failed: "+message);
+}
 function say(message){ $("status").textContent = message; }
 function shortAddress(a){ return a ? a.slice(0,7)+"…"+a.slice(-5) : "Not connected"; }
 function fmt(raw, decimals){ const n=BigInt(String(raw)); const base=10n**BigInt(decimals); const whole=n/base; const fraction=(n%base).toString().padStart(decimals,"0").replace(/0+$/,""); return whole.toString()+(fraction?"."+fraction:""); }
@@ -168,10 +186,27 @@ async function inspect(){
     }else $("balance").textContent="Connect wallet";
     $("walletLabel").textContent=shortAddress(wallet||tw.defaultAddress?.base58);
     $("network").textContent=(tw.fullNode&&tw.fullNode.host)||"Wallet network";
-    activeNetworkKey=(tw.fullNode&&tw.fullNode.host)||"unknown";\n    say("Token metadata and balance loaded from the connected wallet provider. Network endpoint: "+activeNetworkKey+". Cross-chain transfers are disabled until an audited bridge and destination contract are configured.");
+    activeNetworkKey=(tw.fullNode&&tw.fullNode.host)||"unknown";
+    say("Token metadata and balance loaded from the connected wallet provider. Network endpoint: "+activeNetworkKey+". Cross-chain transfers are disabled until an audited bridge and destination contract are configured.");
   }catch(e){say(e.message||String(e));}
 }
-async function waitForConfirmation(tw, txid){\n  for(let i=0;i<12;i++){\n    try{\n      if(tw.trx && typeof tw.trx.getTransactionInfo==="function"){\n        const info=await tw.trx.getTransactionInfo(txid);\n        if(info && info.id && info.blockNumber){\n          const result=info.receipt && info.receipt.result;\n          if(result && result!=="SUCCESS") throw new Error("Transaction was included but execution status is "+result+".");\n          return true;\n        }\n      }\n    }catch(error){ if(/execution status/.test(String(error.message))) throw error; }\n    await sleep(2500);\n  }\n  return false;\n}\nasync function send(){
+async function waitForConfirmation(tw, txid){
+  for(let i=0;i<12;i++){
+    try{
+      if(tw.trx && typeof tw.trx.getTransactionInfo==="function"){
+        const info=await tw.trx.getTransactionInfo(txid);
+        if(info && info.id && info.blockNumber){
+          const result=info.receipt && info.receipt.result;
+          if(result && result!=="SUCCESS") throw new Error("Transaction was included but execution status is "+result+".");
+          return true;
+        }
+      }
+    }catch(error){ if(/execution status/.test(String(error.message))) throw error; }
+    await sleep(2500);
+  }
+  return false;
+}
+async function send(){
   try{
     const tw=await connect();
     if(!token) await inspect();
