@@ -17,6 +17,9 @@ main{width:min(960px,100%);margin:auto;padding:28px 18px 60px}.top{display:flex;
   <h1>Your TRC-20 token,<br>with wallet-approved transfers.</h1>
   <p class="sub">Read verified TRC-20 contract metadata and balances, then request wallet-approved transfers. Cross-chain movement requires a separately audited bridge and matching contracts on both chains; this page does not bridge, mint, or alter balances by itself.</p>
   <section class="panel">
+    <div class="warning"><strong>Cross-chain bridge: not enabled.</strong> This version supports inspecting TRC-20 contracts and same-chain wallet-approved transfers only. A matching token name or symbol is not proof of cross-chain backing. Bridge support requires audited source/destination contracts and a verified token registry. <a href="https://github.com/MyTeleProject2026/tronlink-skills/blob/main/docs/BRIDGE_INTEGRATION.md" style="color:var(--accent)">Bridge integration requirements</a>.</div>
+  </section>
+  <section class="panel">
     <h2>1. Connect and inspect a deployed token</h2>
     <div class="grid">
       <div class="wide"><label for="contract">TRC-20 contract address (T...)</label><input id="contract" autocomplete="off" placeholder="Paste your deployed token contract address"></div>
