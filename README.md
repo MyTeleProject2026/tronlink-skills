@@ -236,3 +236,8 @@ This repository also contains a sponsor-gated custom TRC-20 token workflow:
 - Mainnet manifest template (currently not deployed): [`deployments/mainnet.template.json`](./deployments/mainnet.template.json)
 
 The configured token is named `TRC20`, symbol `VTRC`, decimals `18`, with an initial supply of `1,000,000` whole tokens minted to the deploying wallet. The contract rejects the exact `USDT` symbol. This custom token is not official Tether USDT. No Mainnet deployment is automated by CI; deployment requires a sponsor to approve and fund it.
+
+
+## Multi-chain support status
+
+See [the multi-chain support matrix](./docs/MULTICHAIN_SUPPORT_MATRIX.md) for a clear distinction between live TRON wallet functions, external bridge handoffs, and networks that are not yet implemented in Token Studio. Demo ledger entries are simulated only and must never be treated as on-chain balances.
