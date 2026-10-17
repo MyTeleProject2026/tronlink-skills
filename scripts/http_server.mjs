@@ -7,7 +7,7 @@ import http from "node:http";
 import { readFile } from "node:fs/promises";
 import { execFile } from "node:child_process";
 import { fileURLToPath } from "node:url";
-import { dirname, resolve } from "node:path";
+import { dirname, extname, resolve, sep } from "node:path";
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 const cli = resolve(root, "scripts/tron_api.mjs");
@@ -107,17 +107,50 @@ function runCommand(command, args) {
 }
 const server = http.createServer(async (req, res) => {
   const url = new URL(req.url || "/", `http://${req.headers.host || "localhost"}`);
-  if (req.method === "GET" && url.pathname === "/token-studio") {
+  if (req.method === "GET" && (url.pathname === "/token-studio" || url.pathname === "/token-studio/")) {
     try {
-      const page = await readFile(resolve(root, "public/token-studio.html"), "utf8");
+      let page;
+      try {
+        page = await readFile(resolve(root, "public/token-studio-app/index.html"), "utf8");
+      } catch {
+        page = await readFile(resolve(root, "public/token-studio.html"), "utf8");
+      }
       res.writeHead(200, {
         "Content-Type": "text/html; charset=utf-8",
         "Cache-Control": "no-store",
-        "X-Content-Type-Options": "nosniff"
+        "X-Content-Type-Options": "nosniff",
+        "Referrer-Policy": "no-referrer"
       });
       return res.end(page);
     } catch {
       return send(res, 500, { error: "Token Studio page is unavailable" });
+    }
+  }
+  if (req.method === "GET" && url.pathname === "/token-studio-legacy") {
+    try {
+      const page = await readFile(resolve(root, "public/token-studio.html"), "utf8");
+      res.writeHead(200, { "Content-Type": "text/html; charset=utf-8", "Cache-Control": "no-store", "X-Content-Type-Options": "nosniff" });
+      return res.end(page);
+    } catch {
+      return send(res, 500, { error: "Legacy Token Studio page is unavailable" });
+    }
+  }
+  if (req.method === "GET" && url.pathname.startsWith("/token-studio-app/")) {
+    const staticRoot = resolve(root, "public/token-studio-app");
+    let filePath;
+    try {
+      filePath = resolve(staticRoot, decodeURIComponent(url.pathname.slice("/token-studio-app/".length)));
+    } catch {
+      return send(res, 400, { error: "Invalid asset path" });
+    }
+    if (!filePath.startsWith(staticRoot + sep)) return send(res, 400, { error: "Invalid asset path" });
+    const types = { ".js": "text/javascript; charset=utf-8", ".css": "text/css; charset=utf-8", ".svg": "image/svg+xml", ".png": "image/png", ".webp": "image/webp", ".woff2": "font/woff2", ".ico": "image/x-icon" };
+    try {
+      const asset = await readFile(filePath);
+      res.writeHead(200, { "Content-Type": types[extname(filePath)] || "application/octet-stream", "Cache-Control": "public, max-age=31536000, immutable", "X-Content-Type-Options": "nosniff" });
+      return res.end(asset);
+    } catch {
+      return send(res, 404, { error: "Frontend asset not found" });
     }
   }
   if (req.method === "GET" && url.pathname === "/bridge-status") {
@@ -164,7 +197,7 @@ const server = http.createServer(async (req, res) => {
     });
   }
   if (req.method !== "POST" || url.pathname !== "/api/command") {
-    return send(res, 404, { error: "Not found", endpoints: ["GET /", "GET /health", "GET /token-studio", "GET /bridge-status", "GET /demo-funds", "POST /api/command"] });
+    return send(res, 404, { error: "Not found", endpoints: ["GET /", "GET /health", "GET /token-studio", "GET /token-studio-legacy", "GET /bridge-status", "GET /demo-funds", "POST /api/command"] });
   }
   if (rateLimited(req)) return send(res, 429, { error: "Rate limit exceeded. Try again in one minute." });
   try {
