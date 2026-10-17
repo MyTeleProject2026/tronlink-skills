@@ -36,7 +36,7 @@ test("wallet transaction status strings use newline escapes rather than literal 
 
 
 test("Token Studio inline JavaScript parses without syntax errors", () => {
-  const scripts = [...page.matchAll(/<script\\b[^>]*>([\\s\\S]*?)<\\/script>/gi)];
+  const scripts = [...page.matchAll(/<script\b[^>]*>([\s\S]*?)<\/script>/gi)];
   assert.ok(scripts.length > 0, "Expected at least one inline script block");
   for (const [index, match] of scripts.entries()) {
     if (!match[1].trim()) continue;
