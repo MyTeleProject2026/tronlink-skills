@@ -120,6 +120,20 @@ const server = http.createServer(async (req, res) => {
       return send(res, 500, { error: "Token Studio page is unavailable" });
     }
   }
+  if (req.method === "GET" && url.pathname === "/bridge-status") {
+    try {
+      const page = await readFile(resolve(root, "public/bridge-status.html"), "utf8");
+      res.writeHead(200, {
+        "Content-Type": "text/html; charset=utf-8",
+        "Cache-Control": "no-store",
+        "X-Content-Type-Options": "nosniff",
+        "Referrer-Policy": "no-referrer"
+      });
+      return res.end(page);
+    } catch {
+      return send(res, 500, { error: "Bridge status helper is unavailable" });
+    }
+  }
   if (req.method === "GET" && url.pathname === "/demo-funds") {
     try {
       const page = await readFile(resolve(root, "public/demo-funds.html"), "utf8");
@@ -149,7 +163,7 @@ const server = http.createServer(async (req, res) => {
     });
   }
   if (req.method !== "POST" || url.pathname !== "/api/command") {
-    return send(res, 404, { error: "Not found", endpoints: ["GET /", "GET /health", "GET /token-studio", "GET /demo-funds", "POST /api/command"] });
+    return send(res, 404, { error: "Not found", endpoints: ["GET /", "GET /health", "GET /token-studio", "GET /bridge-status", "GET /demo-funds", "POST /api/command"] });
   }
   if (rateLimited(req)) return send(res, 429, { error: "Rate limit exceeded. Try again in one minute." });
   try {
