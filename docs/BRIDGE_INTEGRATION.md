@@ -77,3 +77,8 @@ Never request, store, transmit, or log private keys or seed phrases. Every trans
 - [ ] Mainnet deployment explicitly approved and funded by the authorized operator.
 
 Until every required item is complete, Token Studio should remain a token inspection / wallet-approved same-chain transfer tool. Cross-chain transfer controls must be disabled, not simulated as real settlement.
+
+
+## Official SDK follow-up
+
+A review of Meson's public `@mesonfi/to` SDK and its integration requirements is documented in [MESON_SDK_REVIEW.md](./MESON_SDK_REVIEW.md). The SDK is oriented around deposits into a registered integrating application's contract, so it is not treated as a drop-in generic wallet-to-wallet bridge. The current provider handoff and disabled in-app execution status remain unchanged until Meson confirms the correct production integration path.
