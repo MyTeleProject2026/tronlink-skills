@@ -55,6 +55,15 @@ main{width:min(960px,100%);margin:auto;padding:28px 18px 60px}.top{display:flex;
     </div>
   </section>
   <section class="panel">
+    <h2>My TRC-20 portfolio</h2>
+    <p class="sub">Save contract addresses in this browser and refresh balances for the connected wallet. This watchlist is local to this browser and network endpoint; it does not store keys or discover every token automatically. Only add contracts on the active TRON network.</p>
+    <div class="actions">
+      <button id="addWatchToken" class="secondary" type="button">Add inspected token</button>
+      <button id="refreshWatchlist" class="secondary" type="button">Refresh all balances</button>
+    </div>
+    <div id="watchlist" class="status" role="status" aria-live="polite">Connect a wallet, inspect a token, then add it here to track its balance.</div>
+  </section>
+  <section class="panel">
     <h2>Fee assistance and free testing</h2>
     <p class="sub">Token Studio supports arbitrary TRC-20 contracts on the connected TRON network when the contract implements the expected interface. It cannot make a Mainnet transfer fee-free by itself: the transaction needs sufficient Bandwidth/Energy or TRX, unless a legitimate sponsor explicitly funds or delegates resources for that transaction.</p>
     <div class="actions">
@@ -271,6 +280,75 @@ if($("trackMeson")) $("trackMeson").addEventListener("click",()=>{
   if(!/^[0-9a-fA-F]{64}$/.test(id)){say("Enter a valid 32-byte Meson swap ID from the official provider.");return;}
   window.open("https://explorer.meson.fi/swap/0x"+id,"_blank","noopener,noreferrer");
 });
+const WATCHLIST_KEY = "tronlink-token-studio-watchlist-v1";
+function loadWatchlist(){
+  try{
+    const items=JSON.parse(localStorage.getItem(WATCHLIST_KEY)||"[]");
+    return Array.isArray(items)?items.filter(x=>x&&typeof x.address==="string").slice(0,50):[];
+  }catch(_){return [];}
+}
+function saveWatchlist(items){
+  try{localStorage.setItem(WATCHLIST_KEY,JSON.stringify(items.slice(0,50)));return true;}
+  catch(_){say("Could not save watchlist in this browser. Your wallet and on-chain balances are unchanged.");return false;}
+}
+function renderWatchlist(items){
+  const root=$("watchlist");
+  if(!items.length){root.textContent="No tokens saved yet. Inspect a TRC-20 contract and choose Add inspected token.";return;}
+  root.replaceChildren();
+  items.forEach(item=>{
+    const row=document.createElement("div");
+    row.style.cssText="padding:10px 0;border-bottom:1px solid var(--line);overflow-wrap:anywhere";
+    const label=document.createElement("strong");
+    label.textContent=(item.symbol||"TRC-20")+" · "+(item.balance||"Balance not loaded");
+    const address=document.createElement("div");
+    address.className="foot";
+    address.textContent=item.address;
+    const remove=document.createElement("button");
+    remove.type="button";remove.className="secondary";remove.textContent="Remove";
+    remove.style.marginTop="8px";
+    remove.addEventListener("click",()=>{
+      const next=loadWatchlist().filter(x=>x.address.toLowerCase()!==item.address.toLowerCase());
+      saveWatchlist(next);renderWatchlist(next);
+    });
+    row.append(label,address,remove);root.append(row);
+  });
+}
+async function addInspectedToken(){
+  try{
+    if(!token) await inspect();
+    if(!token) return;
+    const address=$("contract").value.trim();
+    const items=loadWatchlist();
+    if(items.some(x=>x.address.toLowerCase()===address.toLowerCase())){say("This contract is already in your local watchlist.");return;}
+    if(items.length>=50) throw new Error("Watchlist limit reached (50 contracts). Remove a token before adding another.");
+    items.push({address,name:$("tokenName").textContent,symbol:$("symbol").textContent.split(" / ")[0],decimals:tokenDecimals,balance:$("balance").textContent});
+    saveWatchlist(items);renderWatchlist(items);
+    say("Added "+$("symbol").textContent.split(" / ")[0]+" to this browser's watchlist. Verify the contract and network before sending.");
+  }catch(e){say(e.message||String(e));}
+}
+async function refreshWatchlist(){
+  try{
+    const tw=await connect();
+    const items=loadWatchlist();
+    if(!items.length){renderWatchlist(items);return;}
+    for(const item of items){
+      try{
+        if(!tw.isAddress(item.address)) throw new Error("Invalid contract address");
+        const instance=await tw.contract(ABI,item.address);
+        const [symbol,decimals,balance]=await readWithBackoff(()=>Promise.all([instance.symbol().call(),instance.decimals().call(),instance.balanceOf(wallet).call()]),"Watchlist balance read");
+        const d=Number(decimals);
+        if(!Number.isInteger(d)||d<0||d>18) throw new Error("Unsupported decimals");
+        item.symbol=String(symbol);item.decimals=d;item.balance=fmt(balance,d)+" "+String(symbol);
+      }catch(e){item.balance="Unavailable: "+String(e.message||e).slice(0,100);}
+    }
+    saveWatchlist(items);renderWatchlist(items);
+    say("Finished refreshing "+items.length+" saved TRC-20 balance(s) for "+wallet+". Check the selected wallet network and each contract address.");
+  }catch(e){say(e.message||String(e));}
+}
+renderWatchlist(loadWatchlist());
+$("addWatchToken").addEventListener("click",addInspectedToken);
+$("refreshWatchlist").addEventListener("click",refreshWatchlist);
+
 $("connect").addEventListener("click",()=>connect().catch(()=>{}));
 $("inspect").addEventListener("click",inspect);
 $("send").addEventListener("click",send);
