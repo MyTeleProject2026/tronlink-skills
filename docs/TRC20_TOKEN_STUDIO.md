@@ -20,7 +20,7 @@ This repository includes a fixed-supply token contract and a Token Studio page w
 1. Open the official TRON smart-contract guide: https://developers.tron.network/docs/smart-contract-development
 2. Use TRON's official TronIDE or a locally controlled TronBox/TronWeb development setup.
 3. Compile `contracts/CustomTRC20.sol` with Solidity 0.8.20 or a compatible compiler, keeping the compiler settings and ABI/bytecode from the compilation output.
-4. Deploy to Shasta or Nile testnet first. After the testnet checks pass, switch TronLink to TRON Mainnet for the intended production deployment. Constructor parameters are:
+4. A testnet deployment is recommended before Mainnet, but this repository does not deploy automatically to any network. For the requested direct-Mainnet path, use Mainnet only after the sponsor has reviewed the exact source commit, approved the recipient and constructor values, and confirmed funding. The Mainnet migration requires explicit environment confirmations. Constructor parameters are:
    - `tokenName`: your chosen public token name
    - `tokenSymbol`: a distinct ticker such as `VTRC` or `TRC20` (the exact symbol `USDT` is rejected)
    - `tokenDecimals`: `18`
