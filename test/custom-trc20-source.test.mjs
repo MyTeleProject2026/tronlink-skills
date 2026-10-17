@@ -47,3 +47,8 @@ test("transfers reject zero addresses and check balances/allowances", () => {
   assert.match(source, /require\(approved >= value, "Allowance exceeded"\)/);
   assert.match(source, /require\(fromBalance >= value, "Insufficient balance"\)/);
 });
+
+test("flattened verification source matches canonical source", async () => {
+  const flattened = await readFile(new URL("../flattened/CustomTRC20_flat.sol", import.meta.url), "utf8");
+  assert.equal(flattened, source, "Flattened source must match the canonical contract byte-for-byte");
+});
