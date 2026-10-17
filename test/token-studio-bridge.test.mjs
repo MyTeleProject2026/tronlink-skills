@@ -52,3 +52,19 @@ test("Token Studio explains fee sponsorship honestly and links official free tes
   assert.match(page, /cannot make a Mainnet transfer fee-free by itself/i);
   assert.match(page, /Demo credits is simulated local data|Demo credits are simulated local data|Demo credits.*simulated local data/i);
 });
+
+test("Token Studio provides a bounded local TRC-20 portfolio watchlist", () => {
+  assert.match(page, /id="addWatchToken"/);
+  assert.match(page, /id="refreshWatchlist"/);
+  assert.match(page, /WATCHLIST_KEY/);
+  assert.match(page, /items\.length>=50/);
+  assert.match(page, /Saved for a different network endpoint/);
+  assert.match(page, /tokenAddress\.toLowerCase\(\)!==\$\("contract"\)\.value\.trim\(\)\.toLowerCase\(\)/);
+  assert.match(page, /Inspect the currently entered token contract before sending/);
+});
+
+test("Token Studio makes the TRON-only and local-watchlist scope explicit", () => {
+  assert.match(page, /Only add contracts on the active TRON network/);
+  assert.match(page, /does not store keys or discover every token automatically/);
+  assert.match(page, /Never enter a seed phrase or private key/i);
+});
