@@ -26,7 +26,7 @@ function formatUnits(raw: bigint | string, decimals: number): string {
   const fraction = (n % base).toString().padStart(decimals, '0').replace(/0+$/, '');
   return fraction ? `${whole}.${fraction}` : whole.toString();
 }
-function short(address?: string) { return address ? `${address.slice(0, 7)}…${address.slice(-6)}` : 'Not connected'; }
+function short(address?: string | null) { return address ? `${address.slice(0, 7)}…${address.slice(-6)}` : 'Not connected'; }
 
 function Studio() {
   const { message, notification } = AntApp.useApp();
