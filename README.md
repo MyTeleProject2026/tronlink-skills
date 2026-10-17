@@ -215,6 +215,9 @@ MIT License Copyright (c) 2026 TronLink
 
 ## Custom TRC-20 Token Studio
 
+- Real wallet/token interaction page: [`/token-studio`](https://tronlink-skills-api.onrender.com/token-studio)
+- Local-only demo sender/receiver simulator: [`/demo-funds`](https://tronlink-skills-api.onrender.com/demo-funds). Demo credits are browser-local and are not blockchain tokens, USDT, or exchange deposits.
+
 This repository also contains a sponsor-gated custom TRC-20 token workflow:
 
 - Canonical contract: [`contracts/CustomTRC20.sol`](./contracts/CustomTRC20.sol)
