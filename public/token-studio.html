@@ -196,6 +196,7 @@ async function connect(){
     const address=(accounts.find(a=>typeof a==="string" && a.startsWith("T")))||(tw && tw.defaultAddress && tw.defaultAddress.base58);
     if(!address) throw new Error("The selected wallet did not return an active TRON account. Unlock it and approve this site's connection.");
     wallet=address;
+    activeNetworkKey=(tw && tw.fullNode && tw.fullNode.host)||"unknown";
     $("walletLabel").textContent=shortAddress(wallet);
     $("network").textContent=(tw && tw.fullNode && tw.fullNode.host)||"Connected wallet network";
     say("Connected wallet: "+wallet+"\nVerify that the selected wallet is on the same network as your token contract.");
@@ -319,8 +320,9 @@ function renderWatchlist(items){
 }
 async function addInspectedToken(){
   try{
-    if(!token) await inspect();
-    if(!token) return;
+    const requestedAddress=$("contract").value.trim();
+    if(!token || tokenAddress.toLowerCase()!==requestedAddress.toLowerCase()) await inspect();
+    if(!token || tokenAddress.toLowerCase()!==$("contract").value.trim().toLowerCase()) throw new Error("Inspect the currently entered token contract before adding it to the watchlist.");
     const address=$("contract").value.trim();
     const items=loadWatchlist();
     if(items.some(x=>x.address.toLowerCase()===address.toLowerCase())){say("This contract is already in your local watchlist.");return;}
