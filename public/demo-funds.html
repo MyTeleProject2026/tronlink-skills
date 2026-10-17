@@ -1,0 +1,64 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#0b1020">
+<title>Demo TRC-20 Credits | TronLink Skills</title>
+<style>
+:root{color-scheme:dark;--bg:#0b1020;--panel:#121a2d;--line:#263653;--text:#eef4ff;--muted:#9eacc6;--accent:#65e0c1;--warn:#f5c66d}
+*{box-sizing:border-box}body{margin:0;background:radial-gradient(900px 600px at 10% -10%,#20375a 0%,transparent 60%),var(--bg);color:var(--text);font:15px/1.5 system-ui,-apple-system,Segoe UI,sans-serif}main{width:min(900px,100%);margin:auto;padding:26px 16px 54px}.brand{font-size:12px;letter-spacing:.15em;color:var(--accent);font-weight:800}.banner{margin:18px 0;padding:14px 16px;border:1px solid #80632d;background:#2b2417;color:#ffe8b2;border-radius:12px}.panel{margin-top:16px;background:rgba(18,26,45,.95);border:1px solid var(--line);border-radius:18px;padding:20px}.grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}.wide{grid-column:1/-1}label{display:block;color:var(--muted);font-size:13px;margin-bottom:6px}input{width:100%;min-width:0;padding:12px;border:1px solid var(--line);border-radius:10px;background:#0a1120;color:var(--text);font:inherit}button,.link{display:inline-block;border:0;border-radius:10px;padding:12px 15px;background:var(--accent);color:#061b1a;font-weight:750;text-decoration:none;cursor:pointer}.secondary{background:#253552;color:var(--text);border:1px solid #3a4b6b}.actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:14px}.stats{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin-top:12px}.stat{padding:13px;border:1px solid var(--line);border-radius:12px;overflow-wrap:anywhere}.stat small{display:block;color:var(--muted)}.stat strong{display:block;font-size:19px;margin-top:4px}.status{margin-top:12px;padding:12px;border:1px solid var(--line);border-radius:10px;white-space:pre-wrap;overflow-wrap:anywhere;color:var(--muted)}.history{margin:0;padding-left:20px}.history li{margin:8px 0;color:var(--muted)}h1{font-size:clamp(28px,5vw,42px);line-height:1.1;margin:10px 0}h2{font-size:19px;margin:0 0 12px}.muted{color:var(--muted)}code{overflow-wrap:anywhere}@media(max-width:600px){.grid,.stats{grid-template-columns:1fr}.wide{grid-column:auto}.panel{padding:15px}main{padding:20px 12px 40px}}
+</style>
+</head>
+<body><main>
+<div class="brand">TRONLINK SKILLS · SANDBOX</div>
+<h1>Demo TRC-20 credits</h1>
+<p class="muted">A local-only sender and receiver simulator for testing UI flows, address entry, and transfer history.</p>
+<div class="banner"><strong>DEMO ONLY · NOT REAL CRYPTO</strong><br>These credits are stored only in this browser's local storage. They are not USDT, are not recorded on TRON, cannot be transferred to a real wallet, and will not appear in wallets or exchange accounts. Never present this page's demo balances as real funds.</div>
+<section class="panel">
+<h2>1. Select a demo sender</h2>
+<div class="grid">
+<div class="wide"><label for="sender">Sender TRON address (demo account label)</label><input id="sender" autocomplete="off" placeholder="T..."></div>
+<div><label for="creditAmount">Add demo credits</label><input id="creditAmount" inputmode="decimal" placeholder="e.g. 1000"></div>
+<div style="display:flex;align-items:end"><button id="credit" type="button">Add demo credits</button></div>
+</div>
+<div class="actions"><button id="load" class="secondary" type="button">Load demo account</button><button id="reset" class="secondary" type="button">Reset all demo data</button></div>
+<div class="stats"><div class="stat"><small>Asset label</small><strong>DEMO credits</strong></div><div class="stat"><small>Selected sender balance</small><strong id="senderBalance">0 DEMO</strong></div></div>
+<div id="status" class="status" role="status" aria-live="polite">Demo mode is active. Nothing here signs or broadcasts blockchain transactions.</div>
+</section>
+<section class="panel">
+<h2>2. Transfer demo credits to a receiver</h2>
+<div class="grid">
+<div class="wide"><label for="receiver">Receiver TRON address (demo account label)</label><input id="receiver" autocomplete="off" placeholder="T..."></div>
+<div><label for="sendAmount">Amount of demo credits</label><input id="sendAmount" inputmode="decimal" placeholder="e.g. 25.5"></div>
+</div>
+<div class="actions"><button id="send" type="button">Transfer demo credits</button></div>
+<p class="muted">This updates only the simulator ledger in this browser. It does not call a token contract or wallet provider.</p>
+</section>
+<section class="panel">
+<h2>3. Local demo activity</h2>
+<ul id="history" class="history"><li>No demo activity yet.</li></ul>
+<div class="actions"><a class="link" href="/token-studio">Open real token wallet tools</a></div>
+<p class="muted">For real assets, use the wallet tools to read an actual token contract and request a transfer that the connected wallet explicitly signs. The official TRON Mainnet USDT contract is <code>TR7NHqjeKQxGTCi8q8ZY4pL8otSzgjLj6t</code>; a demo balance cannot alter its balance.</p>
+</section>
+</main>
+<script>
+const $=id=>document.getElementById(id);
+const KEY="tronlinkSkillsDemoCreditsV1";
+let ledger=loadLedger();
+function loadLedger(){try{const x=JSON.parse(localStorage.getItem(KEY)||'{"balances":{},"history":[]}');if(x&&x.balances&&Array.isArray(x.history))return x;}catch{}return {balances:{},history:[]};}
+function save(){localStorage.setItem(KEY,JSON.stringify(ledger));render();}
+function address(value){const a=value.trim();if(!/^T[1-9A-HJ-NP-Za-km-z]{33}$/.test(a))throw new Error("Enter a valid-looking TRON Base58 address (T followed by 33 Base58 characters). This is only a demo label; it does not prove the address exists.");return a;}
+function amount(value){if(!/^\d+(\.\d{1,6})?$/.test(value.trim()))throw new Error("Enter a positive amount with up to 6 decimal places.");const n=Math.round(Number(value)*1e6);if(!Number.isSafeInteger(n)||n<=0)throw new Error("Amount must be greater than zero and within the demo limit.");return n;}
+function fmt(n){return (n/1e6).toLocaleString(undefined,{minimumFractionDigits:0,maximumFractionDigits:6});}
+function log(message){ledger.history.unshift({message,time:new Date().toLocaleString()});ledger.history=ledger.history.slice(0,30);}
+function selected(){return $("sender").value.trim();}
+function render(){const s=selected();$("senderBalance").textContent=fmt(ledger.balances[s]||0)+" DEMO";$("history").innerHTML="";if(!ledger.history.length){$("history").innerHTML="<li>No demo activity yet.</li>";return;}for(const item of ledger.history){const li=document.createElement("li");li.textContent=item.time+" · "+item.message;$("history").appendChild(li);}}
+$("load").addEventListener("click",()=>{try{const s=address(selected());$("sender").value=s;render();$("status").textContent="Loaded local demo account "+s+". Balance is not an on-chain balance.";}catch(e){$("status").textContent=e.message;}});
+$("credit").addEventListener("click",()=>{try{const s=address(selected());const n=amount($("creditAmount").value);ledger.balances[s]=(ledger.balances[s]||0)+n;log("Added "+fmt(n)+" DEMO credits to "+s+" (local simulation only).");save();$("status").textContent="Demo credits added locally. No blockchain transaction was created."; }catch(e){$("status").textContent=e.message;}});
+$("send").addEventListener("click",()=>{try{const s=address(selected()),r=address($("receiver").value),n=amount($("sendAmount").value);if(s===r)throw new Error("Choose a different receiver address.");if((ledger.balances[s]||0)<n)throw new Error("Insufficient demo credits in the selected sender account.");ledger.balances[s]-=n;ledger.balances[r]=(ledger.balances[r]||0)+n;log("Transferred "+fmt(n)+" DEMO credits from "+s+" to "+r+" (local simulation only).");save();$("status").textContent="Demo transfer completed in this browser only. No TRON transaction ID exists."; }catch(e){$("status").textContent=e.message;}});
+$("reset").addEventListener("click",()=>{if(!confirm("Delete all demo balances and demo history from this browser?"))return;ledger={balances:{},history:[]};save();$("status").textContent="Local demo data cleared. No blockchain assets were affected.";});
+$("sender").addEventListener("input",render);
+render();
+</script>
+</body></html>
