@@ -194,6 +194,29 @@ const server = http.createServer(async (req, res) => {
       return send(res, 500, { error: "Demo credits page is unavailable" });
     }
   }
+  if (req.method === "GET" && url.pathname === "/capabilities") {
+    return send(res, 200, {
+      service: "tronlink-skills-api",
+      schemaVersion: 1,
+      capabilities: [
+        { id: "tron-mainnet-trx-read", network: "TRON Mainnet", asset: "TRX", operation: "balance-read", status: "available", execution: "read-only API or connected wallet provider" },
+        { id: "tron-trc20-read", network: "TRON Mainnet", asset: "TRC-20", operation: "balance-and-metadata-read", status: "available", execution: "connected wallet provider" },
+        { id: "tron-trc20-transfer", network: "TRON Mainnet", asset: "TRC-20", operation: "transfer", status: "available-with-wallet-approval", execution: "user signs in selected wallet; this API does not sign or broadcast" },
+        { id: "arbitrum-usdt-handoff", network: "Arbitrum One", asset: "USDT", operation: "external-provider-handoff", status: "handoff-only", execution: "no in-app balance read, transfer, bridge execution, or settlement verification" },
+        { id: "ethereum-wallet", network: "Ethereum", asset: "native and ERC-20", operation: "wallet-and-transfer", status: "not-implemented" },
+        { id: "bnb-chain-wallet", network: "BNB Smart Chain", asset: "native and BEP-20", operation: "wallet-and-transfer", status: "not-implemented" },
+        { id: "polygon-wallet", network: "Polygon", asset: "native and ERC-20", operation: "wallet-and-transfer", status: "not-implemented" },
+        { id: "solana-wallet", network: "Solana", asset: "SOL and SPL tokens", operation: "wallet-and-transfer", status: "not-implemented" },
+        { id: "multichain-demo", network: "multiple", asset: "demo credits", operation: "local simulation", status: "simulation-only", execution: "no blockchain reads, signatures, or transfers" }
+      ],
+      safety: {
+        privateKeysCollected: false,
+        seedPhrasesCollected: false,
+        fabricatedBalancesOrReceipts: false,
+        exchangeCreditGuaranteed: false
+      }
+    });
+  }
   if (req.method === "GET" && (url.pathname === "/health" || url.pathname === "/healthz")) {
     return send(res, 200, { status: "ok", service: "tronlink-skills-api", network: process.env.TRON_NETWORK || "mainnet", node: process.version });
   }
