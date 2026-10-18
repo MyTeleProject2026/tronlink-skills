@@ -361,12 +361,21 @@ async function refreshWatchlist(){
   }catch(e){say(e.message||String(e));}
 }
 renderWatchlist(loadWatchlist());
-$("addWatchToken").addEventListener("click",addInspectedToken);
-$("refreshWatchlist").addEventListener("click",refreshWatchlist);
-
-$("connect").addEventListener("click",()=>connect().catch(()=>{}));
-$("inspect").addEventListener("click",inspect);
-$("send").addEventListener("click",send);
+async function runWithButtonState(id, busyLabel, action){
+  const button=$(id);
+  if(!button || button.disabled) return;
+  const originalLabel=button.textContent;
+  button.disabled=true;
+  button.setAttribute("aria-busy","true");
+  button.textContent=busyLabel;
+  try{ await action(); }
+  finally{ button.disabled=false; button.removeAttribute("aria-busy"); button.textContent=originalLabel; }
+}
+$("addWatchToken").addEventListener("click",()=>runWithButtonState("addWatchToken","Adding token…",addInspectedToken));
+$("refreshWatchlist").addEventListener("click",()=>runWithButtonState("refreshWatchlist","Refreshing balances…",refreshWatchlist));
+$("connect").addEventListener("click",()=>runWithButtonState("connect","Waiting for wallet…",()=>connect().catch(()=>{})));
+$("inspect").addEventListener("click",()=>runWithButtonState("inspect","Loading token…",inspect));
+$("send").addEventListener("click",()=>runWithButtonState("send","Processing transfer…",send));
 </script>
 </body>
 </html>
