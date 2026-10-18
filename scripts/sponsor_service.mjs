@@ -218,8 +218,15 @@ export async function verifySolidifiedTransfer({ transactionId, recipient, amoun
     return { status: "mismatch", confirmed: false, transactionId: transactionId.toLowerCase(), reason: "Solidified transaction does not match the expected sponsor, recipient, and amount." };
   }
   const ret = Array.isArray(tx.ret) ? tx.ret[0] : null;
-  if (ret?.contractRet && ret.contractRet !== "SUCCESS") {
-    return { status: "failed", confirmed: false, transactionId: transactionId.toLowerCase(), contractResult: ret.contractRet };
+  // Fail closed: a solidified transaction body without an explicit successful
+  // contract result is not sufficient evidence to mark a payout as confirmed.
+  if (ret?.contractRet !== "SUCCESS") {
+    return {
+      status: ret?.contractRet ? "failed" : "solidified-result-incomplete",
+      confirmed: false,
+      transactionId: transactionId.toLowerCase(),
+      ...(ret?.contractRet ? { contractResult: ret.contractRet } : { reason: "Solidified transaction did not include an explicit SUCCESS result." })
+    };
   }
   return {
     status: "confirmed",
