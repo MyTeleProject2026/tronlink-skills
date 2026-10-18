@@ -1,7 +1,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import { createHash } from "node:crypto";
-import { sponsorStatus, validateSponsorRequest, verifySolidifiedTransfer } from "../scripts/sponsor_service.mjs";
+import { requestSponsoredTransfer, sponsorStatus, validateSponsorRequest, verifySolidifiedTransfer } from "../scripts/sponsor_service.mjs";
 
 const TEST_ADDRESS = "TJRabPrwbZy45sbavfcjy6eFXvuF8K8Z9Z";
 const TXID = "a".repeat(64);
@@ -105,4 +105,22 @@ test("solidified transfer is confirmed only with an explicit SUCCESS result", as
     assert.equal(result.status, "confirmed");
     assert.equal(result.confirmed, true);
   });
+});
+
+
+test("rejects an invalid sponsor wallet checksum before contacting the provider", async () => {
+  const invalidSponsor = TEST_ADDRESS.slice(0, -1) + (TEST_ADDRESS.endsWith("A") ? "B" : "A");
+  await assert.rejects(
+    requestSponsoredTransfer({
+      recipient: TEST_ADDRESS,
+      amountTrx: "1",
+      idempotencyKey: "sponsor-test-request-0002"
+    }, {
+      SPONSOR_PROVIDER_URL: "https://provider.example",
+      SPONSOR_PROVIDER_API_KEY: "test-secret",
+      SPONSOR_CLIENT_TOKEN: "test-client-token",
+      SPONSOR_WALLET_ADDRESS: invalidSponsor
+    }),
+    /SPONSOR_WALLET_ADDRESS checksum is invalid/
+  );
 });
