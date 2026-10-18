@@ -37,7 +37,7 @@
     <p class="foot">This lookup only opens the official Explorer page for the ID you enter. It does not independently verify or fetch settlement status.</p>
     <p class="foot">Before signing, independently confirm the origin is TRON, destination is Arbitrum, both token contract addresses match the list above, the recipient is correct, and the provider shows an acceptable quote. Never share a seed phrase or private key. A provider handoff is not proof that a transfer has started or completed.</p>
   </section>
-  <section class="panel">
+  <section class="panel" id="inspectPanel">
     <h2>1. Connect and inspect a deployed token</h2>
     <div class="grid">
       <div class="wide"><label for="contract">TRC-20 contract address (T...)</label><input id="contract" autocomplete="off" placeholder="Paste your deployed token contract address"></div>
@@ -54,7 +54,7 @@
       <div class="stat"><small>Network</small><strong id="network">—</strong></div>
     </div>
   </section>
-  <section class="panel">
+  <section class="panel" id="portfolioPanel">
     <h2>My TRC-20 portfolio</h2>
     <p class="sub">Save contract addresses in this browser and refresh balances for the connected wallet. This watchlist is local to this browser and network endpoint; it does not store keys or discover every token automatically. Only add contracts on the active TRON network.</p>
     <div class="actions">
@@ -73,7 +73,7 @@
     <p class="foot">For no-cost development, switch your wallet to Shasta or Nile and use test tokens from the official faucet. Testnet tokens have no real-world value. Do not trust a site claiming to give unlimited real Mainnet USDT or free transfers without explaining who pays the network resources.</p>
     <p class="foot">A token shown in Demo credits is simulated local data, not a blockchain asset. It cannot be transferred, redeemed, deposited, or withdrawn. The page does not fabricate transaction IDs or claim demo credits are real funds.</p>
   </section>
-  <section class="panel">
+  <section class="panel" id="sendPanel">
     <h2>2. Send your token</h2>
     <p class="sub">Only transfer a token contract you trust. Verify the contract address and recipient before approving the wallet confirmation.</p>
     <div class="grid">
