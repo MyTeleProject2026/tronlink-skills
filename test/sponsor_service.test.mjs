@@ -3,7 +3,7 @@ import assert from "node:assert/strict";
 import { createHash } from "node:crypto";
 import { requestSponsoredTransfer, sponsorStatus, validateSponsorRequest, verifySolidifiedTransfer } from "../scripts/sponsor_service.mjs";
 
-const TEST_ADDRESS = "TJRabPrwbZy45sbavfcjy6eFXvuF8K8Z9Z";
+const TEST_ADDRESS = "TR7NHqjeKQxGTCi8q8ZY4pL8otSzgjLj6t";
 const TXID = "a".repeat(64);
 
 test("sponsor is disabled until every required provider setting exists", () => {
