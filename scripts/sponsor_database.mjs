@@ -38,9 +38,16 @@ export async function connectSponsorDatabase(env = process.env) {
     }
     state.schemaReady = await checkSponsorLedgerReady(pool);
   } catch (error) {
-    state.error = error?.code === "ECONNREFUSED" ? "connection-refused" :
-      error?.code === "28P01" ? "authentication-failed" :
-      error?.code === "3D000" ? "database-not-found" :
+    const code = typeof error?.code === "string" ? error.code : null;
+    state.errorCode = code;
+    state.error = code === "ECONNREFUSED" ? "connection-refused" :
+      code === "ETIMEDOUT" ? "connection-timeout" :
+      code === "ENOTFOUND" ? "database-host-not-resolved" :
+      code === "EHOSTUNREACH" || code === "ENETUNREACH" ? "network-unreachable" :
+      code === "ECONNRESET" ? "connection-reset" :
+      code === "28P01" ? "authentication-failed" :
+      code === "3D000" ? "database-not-found" :
+      code === "42501" ? "database-permission-denied" :
       "database-check-failed";
     state.connected = false;
     state.schemaReady = false;
