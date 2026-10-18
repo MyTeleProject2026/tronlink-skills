@@ -18,7 +18,7 @@ function assertText(value, label, max = 256) {
 
 function assertAmountSun(value) {
   const text = String(value);
-  if (!/^\\d+$/.test(text)) throw new TypeError("amountSun must be an integer SUN value");
+  if (!/^\d+$/.test(text)) throw new TypeError("amountSun must be an integer SUN value");
   const amount = BigInt(text);
   if (amount < 1n || amount > MAX_SUN) throw new RangeError("amountSun must be between 1 SUN and 100 TRX");
   return text;
