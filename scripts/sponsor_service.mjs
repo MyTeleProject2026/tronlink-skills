@@ -92,6 +92,13 @@ export async function requestSponsoredTransfer(body, env = process.env) {
   }
   if (base.protocol !== "https:") throw Object.assign(new Error("Sponsor provider URL must use HTTPS"), { status: 503 });
   if (!ADDRESS_RE.test(env.SPONSOR_WALLET_ADDRESS)) throw Object.assign(new Error("SPONSOR_WALLET_ADDRESS is invalid"), { status: 503 });
+  // Validate Base58Check checksum before making any external provider request.
+  try { base58AddressToHex(env.SPONSOR_WALLET_ADDRESS); } catch {
+    throw Object.assign(new Error("SPONSOR_WALLET_ADDRESS checksum is invalid"), { status: 503 });
+  }
+  if (base.username || base.password || base.search || base.hash) {
+    throw Object.assign(new Error("SPONSOR_PROVIDER_URL must not contain credentials, query parameters, or a fragment"), { status: 503 });
+  }
   const request = validateSponsorRequest(body);
   const timeout = AbortSignal.timeout(12_000);
   const requestDigest = createHash("sha256")
