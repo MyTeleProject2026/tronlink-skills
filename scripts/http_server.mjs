@@ -203,6 +203,7 @@ const server = http.createServer(async (req, res) => {
         { id: "tron-mainnet-trx-read", network: "TRON Mainnet", asset: "TRX", operation: "balance-read", status: "available", execution: "read-only API or connected wallet provider" },
         { id: "tron-trc20-read", network: "TRON Mainnet", asset: "TRC-20", operation: "balance-and-metadata-read", status: "available", execution: "connected wallet provider" },
         { id: "tron-trc20-transfer", network: "TRON Mainnet", asset: "TRC-20", operation: "transfer", status: "available-with-wallet-approval", execution: "user signs in selected wallet; this API does not sign or broadcast" },
+        { id: "tron-sponsored-native-trx-payout", network: "TRON Mainnet", asset: "TRX", operation: "sponsored-payout", status: sponsorStatus().status, execution: "external provider adapter; max 100 TRX; authenticated server-to-server only; solidified transfer verification required" },
         { id: "arbitrum-usdt-handoff", network: "Arbitrum One", asset: "USDT", operation: "external-provider-handoff", status: "handoff-only", execution: "no in-app balance read, transfer, bridge execution, or settlement verification" },
         { id: "ethereum-wallet", network: "Ethereum", asset: "native and ERC-20", operation: "wallet-and-transfer", status: "not-implemented" },
         { id: "bnb-chain-wallet", network: "BNB Smart Chain", asset: "native and BEP-20", operation: "wallet-and-transfer", status: "not-implemented" },
