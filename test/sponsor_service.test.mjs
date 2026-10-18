@@ -9,6 +9,7 @@ const TXID = "a".repeat(64);
 test("sponsor is disabled until every required provider setting exists", () => {
   const status = sponsorStatus({});
   assert.equal(status.configured, false);
+  assert.equal(status.ledgerReady, false);
   assert.equal(status.status, "disabled-not-configured");
   assert.equal(status.maximumPerTransferTrx, 100);
   assert.equal(status.paysTransferAmount, true);
@@ -66,47 +67,46 @@ async function withMockedFetch(payload, callback) {
   try { await callback(); } finally { globalThis.fetch = originalFetch; }
 }
 
-test("solidified transfer is not confirmed without an explicit SUCCESS result", async () => {
-  const hex = addressHex(TEST_ADDRESS);
-  const tx = {
-    txID: TXID,
-    raw_data: {
-      contract: [{
-        type: "TransferContract",
-        parameter: { value: { owner_address: hex, to_address: hex, amount: "1000000" } }
-      }]
-    }
-  };
-  await withMockedFetch(tx, async () => {
-    const result = await verifySolidifiedTransfer({
-      transactionId: TXID, recipient: TEST_ADDRESS, amountTrx: "1"
-    }, { SPONSOR_WALLET_ADDRESS: TEST_ADDRESS, TRON_SOLIDITY_NODE_URL: "https://solid.example" });
-    assert.equal(result.status, "solidified-result-incomplete");
-    assert.equal(result.confirmed, false);
-  });
+test("payout submission is hard-disabled until the durable ledger is integrated", async () => {
+  let fetchCalled = false;
+  const originalFetch = globalThis.fetch;
+  globalThis.fetch = async () => { fetchCalled = true; throw new Error("must not call provider"); };
+  try {
+    await assert.rejects(
+      requestSponsoredTransfer({
+        recipient: TEST_ADDRESS,
+        amountTrx: "1",
+        idempotencyKey: "sponsor-test-request-0003"
+      }, {
+        SPONSOR_PROVIDER_URL: "https://provider.example",
+        SPONSOR_PROVIDER_API_KEY: "test-secret",
+        SPONSOR_CLIENT_TOKEN: "test-client-token",
+        SPONSOR_WALLET_ADDRESS: TEST_ADDRESS
+      }),
+      /durable payout ledger is integrated and tested/
+    );
+    assert.equal(fetchCalled, false);
+  } finally {
+    globalThis.fetch = originalFetch;
+  }
 });
 
-test("solidified transfer is confirmed only with an explicit SUCCESS result", async () => {
-  const hex = addressHex(TEST_ADDRESS);
-  const tx = {
-    txID: TXID,
-    raw_data: {
-      contract: [{
-        type: "TransferContract",
-        parameter: { value: { owner_address: hex, to_address: hex, amount: "1000000" } }
-      }]
-    },
-    ret: [{ contractRet: "SUCCESS" }]
-  };
-  await withMockedFetch(tx, async () => {
-    const result = await verifySolidifiedTransfer({
-      transactionId: TXID, recipient: TEST_ADDRESS, amountTrx: "1"
-    }, { SPONSOR_WALLET_ADDRESS: TEST_ADDRESS, TRON_SOLIDITY_NODE_URL: "https://solid.example" });
-    assert.equal(result.status, "confirmed");
-    assert.equal(result.confirmed, true);
-  });
+test("payout confirmation is hard-disabled until the durable ledger is integrated", async () => {
+  let fetchCalled = false;
+  const originalFetch = globalThis.fetch;
+  globalThis.fetch = async () => { fetchCalled = true; throw new Error("must not call chain"); };
+  try {
+    await assert.rejects(
+      verifySolidifiedTransfer({
+        transactionId: TXID, recipient: TEST_ADDRESS, amountTrx: "1"
+      }, { SPONSOR_WALLET_ADDRESS: TEST_ADDRESS }),
+      /durable payout ledger is integrated and tested/
+    );
+    assert.equal(fetchCalled, false);
+  } finally {
+    globalThis.fetch = originalFetch;
+  }
 });
-
 
 test("rejects an invalid sponsor wallet checksum before contacting the provider", async () => {
   const invalidSponsor = TEST_ADDRESS.slice(0, -1) + (TEST_ADDRESS.endsWith("A") ? "B" : "A");
