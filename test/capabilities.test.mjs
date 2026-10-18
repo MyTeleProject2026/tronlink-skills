@@ -31,3 +31,9 @@ test("published support matrix matches the machine-readable capability boundary"
   assert.match(matrix, /Solana[\s\S]*?Not implemented/);
   assert.match(matrix, /does not query blockchains or move funds/i);
 });
+
+
+test("root discovery and 404 endpoint list expose the capabilities route", () => {
+  assert.match(server, /capabilities: "\/capabilities"/);
+  assert.match(server, /endpoints: \[[^\]]*"GET \/capabilities"/);
+});
