@@ -19,8 +19,32 @@ const maxBody = 16 * 1024;
 const windowMs = 60_000;
 const maxRequests = 30;
 const hits = new Map();
-const sponsorDatabase = await connectSponsorDatabase();
-console.log("Sponsor ledger database:", JSON.stringify({ configured: sponsorDatabase.state.configured, connected: sponsorDatabase.state.connected, schemaReady: sponsorDatabase.state.schemaReady, migrationApplied: sponsorDatabase.state.migrationApplied, error: sponsorDatabase.state.error }));
+let sponsorDatabase = {
+  pool: null,
+  state: {
+    configured: Boolean(process.env.DATABASE_URL),
+    connected: false,
+    schemaReady: false,
+    migrationApplied: false,
+    error: process.env.DATABASE_URL ? "checking" : null
+  },
+  close: async () => {}
+};
+// Database availability must not block API startup. A failed DB check keeps
+// payout readiness false while the read-only API remains available.
+void connectSponsorDatabase().then((database) => {
+  sponsorDatabase = database;
+  console.log("Sponsor ledger database:", JSON.stringify({
+    configured: database.state.configured,
+    connected: database.state.connected,
+    schemaReady: database.state.schemaReady,
+    migrationApplied: database.state.migrationApplied,
+    error: database.state.error
+  }));
+}).catch(() => {
+  sponsorDatabase.state.error = "database-check-failed";
+  console.error("Sponsor ledger database check failed safely.");
+});
 
 const commandOptions = {
   "wallet-balance": ["address"], "token-balance": ["address", "contract"],
