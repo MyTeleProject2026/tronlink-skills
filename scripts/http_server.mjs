@@ -9,6 +9,7 @@ import { execFile } from "node:child_process";
 import { fileURLToPath } from "node:url";
 import { dirname, extname, resolve, sep } from "node:path";
 import { authorizeSponsorRequest, requestSponsoredTransfer, sponsorStatus, verifySolidifiedTransfer } from "./sponsor_service.mjs";
+import { connectSponsorDatabase } from "./sponsor_database.mjs";
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 const cli = resolve(root, "scripts/tron_api.mjs");
@@ -18,6 +19,8 @@ const maxBody = 16 * 1024;
 const windowMs = 60_000;
 const maxRequests = 30;
 const hits = new Map();
+const sponsorDatabase = await connectSponsorDatabase();
+console.log("Sponsor ledger database:", JSON.stringify({ configured: sponsorDatabase.state.configured, connected: sponsorDatabase.state.connected, schemaReady: sponsorDatabase.state.schemaReady, migrationApplied: sponsorDatabase.state.migrationApplied, error: sponsorDatabase.state.error }));
 
 const commandOptions = {
   "wallet-balance": ["address"], "token-balance": ["address", "contract"],
@@ -239,7 +242,7 @@ const server = http.createServer(async (req, res) => {
     });
   }
   if (req.method === "GET" && url.pathname === "/api/sponsor/status") {
-    return send(res, 200, sponsorStatus());
+    return send(res, 200, { ...sponsorStatus(), database: sponsorDatabase.state });
   }
   if (req.method === "POST" && (url.pathname === "/api/sponsor/transfer" || url.pathname === "/api/sponsor/confirm")) {
     if (rateLimited(req)) return send(res, 429, { error: "Rate limit exceeded. Try again in one minute." });
@@ -295,5 +298,5 @@ const server = http.createServer(async (req, res) => {
   }
 });
 server.listen(port, host, () => console.log(`TronLink Skills API listening on ${host}:${port}`));
-process.on("SIGTERM", () => server.close(() => process.exit(0)));
-process.on("SIGINT", () => server.close(() => process.exit(0)));
+process.on("SIGTERM", () => server.close(async () => { await sponsorDatabase.close(); process.exit(0); }));
+process.on("SIGINT", () => server.close(async () => { await sponsorDatabase.close(); process.exit(0); }));
