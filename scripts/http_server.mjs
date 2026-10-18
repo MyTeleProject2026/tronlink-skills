@@ -8,6 +8,7 @@ import { readFile } from "node:fs/promises";
 import { execFile } from "node:child_process";
 import { fileURLToPath } from "node:url";
 import { dirname, extname, resolve, sep } from "node:path";
+import { authorizeSponsorRequest, requestSponsoredTransfer, sponsorStatus, verifySolidifiedTransfer } from "./sponsor_service.mjs";
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 const cli = resolve(root, "scripts/tron_api.mjs");
@@ -223,20 +224,43 @@ const server = http.createServer(async (req, res) => {
   if (req.method === "GET" && url.pathname === "/") {
     return send(res, 200, {
       name: "TronLink Skills API",
-      description: "Read-only TRON wallet, token, market, swap-quote, resource, and staking queries, plus a TronLink-connected token transfer page.",
+      description: "TRON wallet, token, market, swap-quote, resource, staking queries, and an opt-in external-provider sponsored TRX payout adapter.",
       health: "/health",
       capabilities: "/capabilities",
       tokenStudio: "/token-studio",
       bridgeStatus: "/bridge-status",
       demoFunds: "/demo-funds",
       multiNetworkDemo: "/multichain-demo",
+      sponsorStatus: "/api/sponsor/status",
       commands: Object.keys(commandOptions),
       usage: { method: "POST", path: "/api/command", body: { command: "wallet-balance", args: { address: "T..." } } },
       note: "The JSON API is read-only. Token Studio requests transfers through TronLink, where the user reviews and signs locally. Never submit private keys or seed phrases."
     });
   }
+  if (req.method === "GET" && url.pathname === "/api/sponsor/status") {
+    return send(res, 200, sponsorStatus());
+  }
+  if (req.method === "POST" && (url.pathname === "/api/sponsor/transfer" || url.pathname === "/api/sponsor/confirm")) {
+    if (rateLimited(req)) return send(res, 429, { error: "Rate limit exceeded. Try again in one minute." });
+    if (!authorizeSponsorRequest(req)) return send(res, 401, { error: "Sponsor API authentication required" });
+    try {
+      const body = await readJson(req);
+      if (url.pathname === "/api/sponsor/transfer") {
+        const result = await requestSponsoredTransfer(body);
+        return send(res, 202, result);
+      }
+      if (!body || typeof body !== "object" || Array.isArray(body) ||
+          Object.keys(body).some(k => !["transactionId", "recipient", "amountTrx"].includes(k))) {
+        return send(res, 400, { error: "Expected transactionId, recipient, and amountTrx only" });
+      }
+      const result = await verifySolidifiedTransfer(body);
+      return send(res, result.confirmed ? 200 : 202, result);
+    } catch (error) {
+      return send(res, error.status || 502, { error: error.status ? error.message : "Sponsor operation failed safely" });
+    }
+  }
   if (req.method !== "POST" || url.pathname !== "/api/command") {
-    return send(res, 404, { error: "Not found", endpoints: ["GET /", "GET /health", "GET /capabilities", "GET /token-studio", "GET /token-studio-legacy", "GET /bridge-status", "GET /demo-funds", "GET /multichain-demo", "POST /api/command"] });
+    return send(res, 404, { error: "Not found", endpoints: ["GET /", "GET /health", "GET /capabilities", "GET /token-studio", "GET /token-studio-legacy", "GET /bridge-status", "GET /demo-funds", "GET /multichain-demo", "GET /api/sponsor/status", "POST /api/sponsor/transfer (authenticated)", "POST /api/sponsor/confirm (authenticated)", "POST /api/command"] });
   }
   if (rateLimited(req)) return send(res, 429, { error: "Rate limit exceeded. Try again in one minute." });
   try {
