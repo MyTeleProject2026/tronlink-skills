@@ -29,22 +29,27 @@ export function sponsorStatus(env = process.env) {
     env.SPONSOR_CLIENT_TOKEN &&
     env.SPONSOR_WALLET_ADDRESS
   );
+  // Deliberately hard-disabled until a durable PostgreSQL ledger is wired into
+  // reservation, provider submission, and confirmation. Credentials alone must
+  // never make payouts callable.
+  const ledgerReady = false;
   return {
     feature: "external-trx-sponsor",
+    ledgerReady,
     network: "TRON Mainnet",
     asset: "TRX",
     maximumPerTransferTrx: MAX_TRX,
     paysTransferAmount: true,
     paysNetworkFee: true,
     configured,
-    status: configured ? "configured-provider-not-yet-verified" : "disabled-not-configured",
+    status: !configured ? "disabled-not-configured" : !ledgerReady ? "disabled-durable-ledger-not-integrated" : "configured-provider-not-yet-verified",
     requiredEnvironment: [
       "SPONSOR_PROVIDER_URL",
       "SPONSOR_PROVIDER_API_KEY",
       "SPONSOR_CLIENT_TOKEN",
       "SPONSOR_WALLET_ADDRESS"
     ],
-    note: "A configured endpoint is not proof of provider funding or on-chain settlement. Test and verify before enabling production use."
+    note: "Payout execution is hard-disabled until the durable ledger is integrated and tested. A configured endpoint is not proof of provider funding or on-chain settlement."
   };
 }
 
@@ -85,6 +90,7 @@ export function validateSponsorRequest(body) {
 
 export async function requestSponsoredTransfer(body, env = process.env) {
   const cfg = sponsorStatus(env);
+  if (!cfg.ledgerReady) throw Object.assign(new Error("Sponsored payouts are disabled until the durable payout ledger is integrated and tested"), { status: 503 });
   if (!cfg.configured) throw Object.assign(new Error("Sponsor service is disabled until provider credentials and sponsor wallet are configured"), { status: 503 });
   let base;
   try { base = new URL(env.SPONSOR_PROVIDER_URL); } catch {
@@ -183,6 +189,7 @@ function base58AddressToHex(address) {
 }
 
 export async function verifySolidifiedTransfer({ transactionId, recipient, amountTrx }, env = process.env) {
+  if (!sponsorStatus(env).ledgerReady) throw Object.assign(new Error("Sponsored payout confirmation is disabled until the durable payout ledger is integrated and tested"), { status: 503 });
   if (typeof transactionId !== "string" || !TXID_RE.test(transactionId)) {
     throw Object.assign(new Error("Invalid transaction ID"), { status: 400 });
   }
