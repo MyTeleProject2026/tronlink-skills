@@ -150,3 +150,83 @@ export function authorizeSponsorRequest(req, env = process.env) {
   const supplied = auth.startsWith("Bearer ") ? auth.slice(7) : "";
   return secretMatches(supplied, expected);
 }
+
+const BASE58 = "123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz";
+function base58AddressToHex(address) {
+  let n = 0n;
+  for (const char of address) {
+    const digit = BASE58.indexOf(char);
+    if (digit < 0) throw new Error("Invalid base58 address");
+    n = n * 58n + BigInt(digit);
+  }
+  let hex = n.toString(16);
+  if (hex.length % 2) hex = "0" + hex;
+  let bytes = Buffer.from(hex, "hex");
+  let leading = 0;
+  while (leading < address.length && address[leading] === "1") leading++;
+  if (leading) bytes = Buffer.concat([Buffer.alloc(leading), bytes]);
+  if (bytes.length !== 25) throw new Error("Invalid TRON address length");
+  const payload = bytes.subarray(0, 21);
+  const checksum = createHash("sha256").update(createHash("sha256").update(payload).digest()).digest().subarray(0, 4);
+  if (!checksum.equals(bytes.subarray(21))) throw new Error("Invalid TRON address checksum");
+  return payload.toString("hex").toLowerCase();
+}
+
+export async function verifySolidifiedTransfer({ transactionId, recipient, amountTrx }, env = process.env) {
+  if (typeof transactionId !== "string" || !TXID_RE.test(transactionId)) {
+    throw Object.assign(new Error("Invalid transaction ID"), { status: 400 });
+  }
+  const request = validateSponsorRequest({
+    recipient, amountTrx,
+    idempotencyKey: "confirm-check-00000001"
+  });
+  const sponsorAddress = env.SPONSOR_WALLET_ADDRESS;
+  if (!sponsorAddress || !ADDRESS_RE.test(sponsorAddress)) {
+    throw Object.assign(new Error("Sponsor wallet address is not configured"), { status: 503 });
+  }
+  const base = (env.TRON_SOLIDITY_NODE_URL || "https://api.trongrid.io").replace(/\/$/, "");
+  let txResponse;
+  try {
+    txResponse = await fetch(base + "/walletsolidity/gettransactionbyid", {
+      method: "POST",
+      headers: { "content-type": "application/json", ...(env.TRONGRID_API_KEY ? { "TRON-PRO-API-KEY": env.TRONGRID_API_KEY } : {}) },
+      body: JSON.stringify({ value: transactionId.toLowerCase() }),
+      signal: AbortSignal.timeout(10_000)
+    });
+  } catch {
+    throw Object.assign(new Error("Could not query TRON solidified transaction data"), { status: 502 });
+  }
+  if (!txResponse.ok) throw Object.assign(new Error("TRON solidity node returned an error"), { status: 502 });
+  const tx = await txResponse.json();
+  if (!tx || !tx.txID || !Array.isArray(tx.raw_data?.contract)) {
+    return { status: "pending-or-not-solidified", confirmed: false, transactionId: transactionId.toLowerCase(), explorerUrl: `https://tronscan.org/#/transaction/${transactionId.toLowerCase()}` };
+  }
+  if (String(tx.txID).toLowerCase() !== transactionId.toLowerCase()) {
+    throw Object.assign(new Error("Solidified node transaction ID did not match"), { status: 502 });
+  }
+  const contract = tx.raw_data.contract[0];
+  const value = contract?.parameter?.value;
+  const expectedTo = base58AddressToHex(request.recipient);
+  const expectedFrom = base58AddressToHex(sponsorAddress);
+  if (contract?.type !== "TransferContract" ||
+      String(value?.owner_address || "").replace(/^0x/i, "").toLowerCase() !== expectedFrom ||
+      String(value?.to_address || "").replace(/^0x/i, "").toLowerCase() !== expectedTo ||
+      String(value?.amount) !== request.amountSun) {
+    return { status: "mismatch", confirmed: false, transactionId: transactionId.toLowerCase(), reason: "Solidified transaction does not match the expected sponsor, recipient, and amount." };
+  }
+  const ret = Array.isArray(tx.ret) ? tx.ret[0] : null;
+  if (ret?.contractRet && ret.contractRet !== "SUCCESS") {
+    return { status: "failed", confirmed: false, transactionId: transactionId.toLowerCase(), contractResult: ret.contractRet };
+  }
+  return {
+    status: "confirmed",
+    confirmed: true,
+    transactionId: transactionId.toLowerCase(),
+    network: "TRON Mainnet",
+    asset: "TRX",
+    sponsorAddress,
+    recipient: request.recipient,
+    amountTrx: request.amountTrx,
+    explorerUrl: `https://tronscan.org/#/transaction/${transactionId.toLowerCase()}`
+  };
+}
