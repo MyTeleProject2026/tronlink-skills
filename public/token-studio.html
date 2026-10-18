@@ -247,13 +247,21 @@ async function waitForConfirmation(tw, txid){
     try{
       if(tw.trx && typeof tw.trx.getTransactionInfo==="function"){
         const info=await tw.trx.getTransactionInfo(txid);
-        if(info && info.id && info.blockNumber){
-          const result=info.receipt && info.receipt.result;
-          if(result && result!=="SUCCESS") throw new Error("Transaction was included but execution status is "+result+".");
-          return true;
+        if(info && info.id && Number(info.blockNumber)>0){
+          const result=String(info.receipt && info.receipt.result || "").toUpperCase();
+          if(result==="SUCCESS") return true;
+          if(result==="FAILED" || result==="REVERT" || result==="OUT_OF_ENERGY"){
+            throw new Error("Transaction was included but failed on-chain (receipt: "+result+"). Check TRONSCAN before retrying.");
+          }
+          // A block number alone is not enough to claim success. Keep polling
+          // until the receipt has an explicit SUCCESS result or the wait expires.
         }
       }
-    }catch(error){ if(/execution status/.test(String(error.message))) throw error; }
+    }catch(error){
+      if(/failed on-chain/.test(String(error.message))) throw error;
+      // Temporary RPC errors are retried; absence of transaction info is normal
+      // while a transaction is propagating.
+    }
     await sleep(2500);
   }
   return false;
