@@ -70,3 +70,11 @@ test("Token Studio makes the TRON-only and local-watchlist scope explicit", () =
   assert.match(page, /does not store keys or discover every token automatically/);
   assert.match(page, /Never enter a seed phrase or private key/i);
 });
+
+
+test("transaction confirmation requires an explicit successful receipt", () => {
+  assert.match(page, /if\(result==="SUCCESS"\) return true/);
+  assert.match(page, /A block number alone is not enough to claim success/);
+  assert.match(page, /failed on-chain/);
+  assert.match(page, /Transaction submitted but not yet confirmed/);
+});
