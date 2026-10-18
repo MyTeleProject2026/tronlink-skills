@@ -8,6 +8,8 @@ The provider adapter is not connected to a verified vendor contract by default. 
 
 The current API has an in-process IP rate limiter and request idempotency field, but it does not yet implement a durable payout ledger, durable idempotency uniqueness, authenticated end-user identity, or persistent per-user spending quotas. These are launch blockers for public use.
 
+Infrastructure checkpoint (2026-10-18): a Render PostgreSQL 18 Free instance named `tronlink-skills-sponsor-ledger` was provisioned in Oregon for development, database ID `dpg-dbafj4tg1s2s73bu80m0-a`. It is 1 GB, has no managed connection pool or backups, and expires on 2026-11-17 unless upgraded. The migration has NOT been applied and the runtime is NOT connected to this database. Do not store real payout ledger records in this expiring test database or treat it as production-grade financial storage. The database should be upgraded and backup/recovery arrangements established before any real-money pilot.
+
 ## Required persistent ledger
 
 Use a managed PostgreSQL database with TLS and migrations. Do not treat a process-local Map, local filesystem, or ephemeral container disk as a financial ledger.
