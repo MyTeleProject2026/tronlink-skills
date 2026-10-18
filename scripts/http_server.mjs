@@ -225,6 +225,7 @@ const server = http.createServer(async (req, res) => {
       name: "TronLink Skills API",
       description: "Read-only TRON wallet, token, market, swap-quote, resource, and staking queries, plus a TronLink-connected token transfer page.",
       health: "/health",
+      capabilities: "/capabilities",
       tokenStudio: "/token-studio",
       bridgeStatus: "/bridge-status",
       demoFunds: "/demo-funds",
@@ -235,7 +236,7 @@ const server = http.createServer(async (req, res) => {
     });
   }
   if (req.method !== "POST" || url.pathname !== "/api/command") {
-    return send(res, 404, { error: "Not found", endpoints: ["GET /", "GET /health", "GET /token-studio", "GET /token-studio-legacy", "GET /bridge-status", "GET /demo-funds", "GET /multichain-demo", "POST /api/command"] });
+    return send(res, 404, { error: "Not found", endpoints: ["GET /", "GET /health", "GET /capabilities", "GET /token-studio", "GET /token-studio-legacy", "GET /bridge-status", "GET /demo-funds", "GET /multichain-demo", "POST /api/command"] });
   }
   if (rateLimited(req)) return send(res, 429, { error: "Rate limit exceeded. Try again in one minute." });
   try {
