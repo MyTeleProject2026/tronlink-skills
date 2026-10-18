@@ -56,7 +56,10 @@ export function validateSponsorRequest(body) {
   const unknown = Object.keys(body).filter((k) => !allowed.includes(k));
   if (unknown.length) throw Object.assign(new Error("Unsupported request fields"), { status: 400 });
   if (typeof body.recipient !== "string" || !ADDRESS_RE.test(body.recipient)) {
-    throw Object.assign(new Error("Recipient must be a valid-looking TRON Mainnet address"), { status: 400 });
+    throw Object.assign(new Error("Recipient must be a valid TRON Mainnet address"), { status: 400 });
+  }
+  try { base58AddressToHex(body.recipient); } catch {
+    throw Object.assign(new Error("Recipient address checksum is invalid"), { status: 400 });
   }
   if (typeof body.amountTrx !== "string" && typeof body.amountTrx !== "number") {
     throw Object.assign(new Error("amountTrx must be a decimal string or number"), { status: 400 });
