@@ -115,6 +115,15 @@ export TRONSCAN_API_KEY="your-api-key"   # raises TronScan limits + enables toke
 export TRON_NETWORK="mainnet"  # or "shasta" / "nile"
 ```
 
+## Custom TRC-20 Token Studio
+
+This project includes a wallet-first Token Studio and a fixed-supply custom TRC-20 contract. It is **not** an official Tether USDT issuer or clone. Use a distinct ticker such as `VTRC`, keep private keys inside the user's wallet, and review the [token cloner integration review](docs/TRC20_USDT_CLONER_INTEGRATION_REVIEW.md) before importing any external deployment code. The review explains why server-side private-key deployment routes from the reference app are not copied.
+
+- Token UI: `/token-studio`
+- Contract source: `contracts/CustomTRC20.sol`
+- Deployment and verification: [Contract build guide](docs/CONTRACT_BUILD_AND_VERIFY.md)
+- Token Studio guide: [TRC-20 Token Studio](docs/TRC20_TOKEN_STUDIO.md)
+
 ## Supported Networks
 
 | Network | Endpoint |
