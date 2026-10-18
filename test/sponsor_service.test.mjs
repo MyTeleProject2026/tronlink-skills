@@ -108,19 +108,27 @@ test("payout confirmation is hard-disabled until the durable ledger is integrate
   }
 });
 
-test("rejects an invalid sponsor wallet checksum before contacting the provider", async () => {
+test("payout stays disabled even when sponsor configuration is invalid", async () => {
+  let fetchCalled = false;
+  const originalFetch = globalThis.fetch;
+  globalThis.fetch = async () => { fetchCalled = true; throw new Error("must not call provider"); };
   const invalidSponsor = TEST_ADDRESS.slice(0, -1) + (TEST_ADDRESS.endsWith("A") ? "B" : "A");
-  await assert.rejects(
-    requestSponsoredTransfer({
-      recipient: TEST_ADDRESS,
-      amountTrx: "1",
-      idempotencyKey: "sponsor-test-request-0002"
-    }, {
-      SPONSOR_PROVIDER_URL: "https://provider.example",
-      SPONSOR_PROVIDER_API_KEY: "test-secret",
-      SPONSOR_CLIENT_TOKEN: "test-client-token",
-      SPONSOR_WALLET_ADDRESS: invalidSponsor
-    }),
-    /SPONSOR_WALLET_ADDRESS checksum is invalid/
-  );
+  try {
+    await assert.rejects(
+      requestSponsoredTransfer({
+        recipient: TEST_ADDRESS,
+        amountTrx: "1",
+        idempotencyKey: "sponsor-test-request-0002"
+      }, {
+        SPONSOR_PROVIDER_URL: "https://provider.example",
+        SPONSOR_PROVIDER_API_KEY: "test-secret",
+        SPONSOR_CLIENT_TOKEN: "test-client-token",
+        SPONSOR_WALLET_ADDRESS: invalidSponsor
+      }),
+      /durable payout ledger is integrated and tested/
+    );
+    assert.equal(fetchCalled, false);
+  } finally {
+    globalThis.fetch = originalFetch;
+  }
 });
