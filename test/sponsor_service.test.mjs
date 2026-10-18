@@ -32,7 +32,7 @@ test("rejects amounts above the cap and excessive precision", () => {
 test("rejects invalid recipient and missing idempotency key", () => {
   assert.throws(() => validateSponsorRequest({
     recipient: "not-an-address", amountTrx: "1", idempotencyKey: "sponsor-test-request-0001"
-  }), /valid-looking TRON Mainnet address/);
+  }), /valid TRON Mainnet address/);
   assert.throws(() => validateSponsorRequest({
     recipient: "TJRabPrwbZy45sbavfcjy6eFXvuF8K8Z9Z", amountTrx: "1", idempotencyKey: "x"
   }), /idempotencyKey/);
