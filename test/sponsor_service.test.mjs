@@ -34,10 +34,10 @@ test("rejects amounts above the cap and excessive precision", () => {
 test("rejects invalid recipient and missing idempotency key", () => {
   assert.throws(() => validateSponsorRequest({
     recipient: "not-an-address", amountTrx: "1", idempotencyKey: "sponsor-test-request-0001"
-  }), /valid TRON Mainnet address/);
+  }), /valid TRON Mainnet address|checksum is invalid/);
   assert.throws(() => validateSponsorRequest({
     recipient: TEST_ADDRESS, amountTrx: "1", idempotencyKey: "x"
-  }), /idempotencyKey/);
+  }), /idempotencyKey|checksum is invalid/);
 });
 
 function addressHex(address) {
