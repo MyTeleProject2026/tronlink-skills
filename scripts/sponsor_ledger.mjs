@@ -117,7 +117,12 @@ export async function recordSponsoredSubmission(pool, {
   payoutId, providerReference, transactionId
 }) {
   const id = assertText(payoutId, "payoutId", 64);
-  const providerRef = assertText(providerReference, "providerReference", 160);
+  // Some sponsor APIs return only a transaction ID. Treat the provider
+  // reference as optional metadata, not a prerequisite for recording a valid
+  // submitted transaction.
+  const providerRef = providerReference == null || providerReference === ""
+    ? null
+    : assertText(providerReference, "providerReference", 160);
   const txid = assertText(transactionId, "transactionId", 64);
   if (!/^[a-fA-F0-9]{64}$/.test(txid)) throw new TypeError("transactionId must be 64 hex characters");
 
