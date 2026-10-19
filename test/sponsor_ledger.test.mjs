@@ -107,6 +107,24 @@ test("submission cannot be recorded unless payout is in a submittable state", as
   assert.ok(pool.calls.some((x) => x.sql === "ROLLBACK"));
 });
 
+test("records a valid submission when provider reference metadata is absent", async () => {
+  const pool = mockPool((sql) => {
+    if (sql.includes("UPDATE sponsor_payouts")) {
+      return { rows: [{ id: "00000000-0000-4000-8000-000000000001", status: "submitted-unconfirmed", provider_reference: null, transaction_id: TXID }] };
+    }
+    return { rows: [] };
+  });
+  const result = await recordSponsoredSubmission(pool, {
+    payoutId: "00000000-0000-4000-8000-000000000001",
+    transactionId: TXID
+  });
+  assert.equal(result.status, "submitted-unconfirmed");
+  const update = pool.calls.find((x) => x.sql.includes("UPDATE sponsor_payouts"));
+  assert.equal(update.params[1], null);
+  const event = pool.calls.find((x) => x.sql.includes("INSERT INTO sponsor_payout_events"));
+  assert.equal(JSON.parse(event.params[1]).providerReference, null);
+});
+
 test("confirmation requires explicit independent verification", async () => {
   const pool = mockPool(() => ({ rows: [] }));
   await assert.rejects(
